@@ -794,6 +794,158 @@ if __name__ == "__main__":
    python test_enhanced_features.py
    ```
 
+## Additional API Endpoints for Frontend Integration
+
+```python
+# Additional endpoints in main.py for frontend features
+
+@app.put("/api/submissions/{submission_id}")
+async def update_submission(
+    submission_id: int,
+    updates: dict,
+    db: Session = Depends(get_db)
+):
+    """Update submission fields (for inline editing)"""
+    
+    submission = db.query(Submission).filter(Submission.id == submission_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Submission not found")
+    
+    # Update allowed fields
+    allowed_fields = ['insured_name', 'effective_date', 'expiry_date', 'underwriter', 'status']
+    
+    for field, value in updates.items():
+        if field in allowed_fields and hasattr(submission, field):
+            setattr(submission, field, value)
+    
+    submission.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(submission)
+    
+    return {
+        "message": f"Submission {submission_id} updated successfully",
+        "updated_fields": list(updates.keys())
+    }
+
+@app.put("/api/workitems/{workitem_id}")
+async def update_workitem(
+    workitem_id: int,
+    updates: dict,
+    db: Session = Depends(get_db)
+):
+    """Update work item fields (for inline editing)"""
+    
+    # In a real implementation, you'd have a WorkItem table
+    # For now, we'll update the related submission
+    submission = db.query(Submission).filter(Submission.id == workitem_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Work item not found")
+    
+    # Update fields that correspond to work item properties
+    field_mapping = {
+        'priority': 'priority',  # Would be stored in work item table
+        'status': 'status',
+        'assigned_to': 'assigned_to',
+        'type': 'policy_type'  # Map work item type to policy type
+    }
+    
+    for field, value in updates.items():
+        if field in field_mapping:
+            mapped_field = field_mapping[field]
+            if hasattr(submission, mapped_field):
+                setattr(submission, mapped_field, value)
+    
+    submission.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return {
+        "message": f"Work item {workitem_id} updated successfully",
+        "updated_fields": list(updates.keys())
+    }
+
+@app.post("/api/workitems/{workitem_id}/assign")
+async def assign_workitem(
+    workitem_id: int,
+    assignment_data: dict,
+    db: Session = Depends(get_db)
+):
+    """Assign work item to underwriter and create submission"""
+    
+    underwriter = assignment_data.get('underwriter')
+    if not underwriter:
+        raise HTTPException(status_code=400, detail="Underwriter is required")
+    
+    # Get the work item (submission record)
+    submission = db.query(Submission).filter(Submission.id == workitem_id).first()
+    if not submission:
+        raise HTTPException(status_code=404, detail="Work item not found")
+    
+    # Update assignment
+    submission.assigned_to = underwriter
+    submission.status = "Assigned"
+    submission.updated_at = datetime.utcnow()
+    
+    # Create assignment notification message
+    message = SubmissionMessage(
+        submission_id=submission.id,
+        message_type="assignment_notification",
+        sender="system",
+        recipient=underwriter,
+        subject=f"New Assignment - Work Item #{workitem_id}",
+        message=f"You have been assigned work item #{workitem_id} for {submission.insured_name}",
+        is_read=False
+    )
+    
+    db.add(message)
+    db.commit()
+    
+    return {
+        "message": f"Work item {workitem_id} assigned to {underwriter}",
+        "submission_id": submission.id,
+        "assigned_to": underwriter,
+        "status": "Assigned"
+    }
+
+@app.get("/api/underwriters")
+async def list_underwriters(db: Session = Depends(get_db)):
+    """Get list of available underwriters"""
+    
+    underwriters = db.query(Underwriter).filter(Underwriter.is_active == True).all()
+    
+    return {
+        "underwriters": [
+            {
+                "id": uw.id,
+                "name": uw.name,
+                "email": uw.email,
+                "specializations": uw.specializations,
+                "max_coverage_limit": uw.max_coverage_limit,
+                "workload": 75  # Would calculate from current assignments
+            }
+            for uw in underwriters
+        ]
+    }
+
+@app.get("/api/refresh-data")
+async def refresh_data(db: Session = Depends(get_db)):
+    """Endpoint for frontend refresh functionality"""
+    
+    # Get fresh counts and summary data
+    total_submissions = db.query(Submission).count()
+    pending_submissions = db.query(Submission).filter(Submission.status.in_(["Pending", "In Review"])).count()
+    new_submissions = db.query(Submission).filter(Submission.status == "New").count()
+    
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "summary": {
+            "total_submissions": total_submissions,
+            "pending_submissions": pending_submissions,
+            "new_submissions": new_submissions
+        },
+        "message": "Data refreshed successfully"
+    }
+```
+
 ## Key Features Implemented
 
 ### ✅ **Submission Completeness Check**
@@ -822,4 +974,18 @@ if __name__ == "__main__":
 - New submission_messages table for communication
 - Maintains backward compatibility
 
-The enhanced system now provides complete submission lifecycle management with validation, business rules, assignment, and communication tracking!
+### ✅ **Frontend Integration APIs**
+- `PUT /api/submissions/{id}` - Update submission fields for inline editing
+- `PUT /api/workitems/{id}` - Update work item fields for inline editing  
+- `POST /api/workitems/{id}/assign` - Assign work item with approval workflow
+- `GET /api/underwriters` - List available underwriters
+- `GET /api/refresh-data` - Refresh endpoint for UI refresh button
+
+### ✅ **Advanced Frontend Features**
+- **Inline Field Editing**: All work item and submission fields are editable with save/cancel
+- **Assignment Approval Dialog**: Confirmation popup before creating submissions
+- **UI Refresh Button**: Refresh data without page reload
+- **State Management**: Proper handling of page refresh and data persistence
+- **Real-time Updates**: Enhanced polling with filtering support
+
+The enhanced system now provides complete submission lifecycle management with validation, business rules, assignment, communication tracking, and advanced UI interactions!

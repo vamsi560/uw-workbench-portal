@@ -46,6 +46,9 @@ interface DataTableProps<TData, TValue> {
   onFilterChange?: (key: keyof WorkItemFilters, value: string) => void;
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
+  // Refresh functionality
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 function Filter({
@@ -79,6 +82,8 @@ export function DataTable<TData, TValue>({
   onFilterChange,
   onResetFilters,
   hasActiveFilters,
+  onRefresh,
+  isRefreshing,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -117,6 +122,8 @@ export function DataTable<TData, TValue>({
          onFilterChange={onFilterChange}
          onResetFilters={onResetFilters}
          hasActiveFilters={hasActiveFilters}
+         onRefresh={onRefresh}
+         isRefreshing={isRefreshing}
        />
       <div className="rounded-md border">
         <Table>

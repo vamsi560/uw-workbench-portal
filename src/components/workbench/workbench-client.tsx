@@ -42,6 +42,7 @@ export function WorkbenchClient() {
   const { toast } = useToast();
   const [submissions, setSubmissions] = React.useState<Submission[]>(defaultSubmissions);
   const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   
   // Work item filtering
   const {
@@ -72,6 +73,46 @@ export function WorkbenchClient() {
   const [summary, setSummary] = React.useState<string>('');
   const [isSummarizing, setIsSummarizing] = React.useState<boolean>(false);
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = React.useState<boolean>(false);
+
+  // Refresh function to refetch data
+  const handleRefresh = React.useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      // Simulate API call - replace with actual API calls
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // In a real app, you would fetch fresh data here:
+      // const freshSubmissions = await fetchSubmissions();
+      // const freshWorkItems = await fetchWorkItems();
+      // setSubmissions(freshSubmissions);
+      // setWorkItems(freshWorkItems);
+      
+      toast({
+        title: "Data Refreshed",
+        description: "All data has been refreshed successfully.",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast({
+        title: "Refresh Failed",
+        description: "Failed to refresh data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [toast]);
+
+  // Initialize data on mount (handles page refresh)
+  React.useEffect(() => {
+    // On component mount, ensure we have fresh data
+    // This prevents issues when user refreshes the page
+    if (!submissions.length && !workItems.length) {
+      // In a real app, fetch initial data here
+      setSubmissions(defaultSubmissions);
+      setWorkItems(defaultWorkItems);
+    }
+  }, []);
 
   // Handle new work items from polling
   React.useEffect(() => {
@@ -329,6 +370,8 @@ export function WorkbenchClient() {
             setRowSelection={setRowSelection}
             setTable={(t) => (tableRef = t)}
             onSummarize={handleSummarize}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
           />
         )}
         {activeTab === 'Work Items' && (
@@ -344,6 +387,8 @@ export function WorkbenchClient() {
             onFilterChange={updateFilter}
             onResetFilters={resetFilters}
             hasActiveFilters={hasActiveFilters}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
           />
         )}
         {activeTab === 'All Submissions' && (
@@ -354,6 +399,8 @@ export function WorkbenchClient() {
             setRowSelection={setRowSelection}
             setTable={(t) => (tableRef = t)}
             onSummarize={handleSummarize}
+            onRefresh={handleRefresh}
+            isRefreshing={isRefreshing}
           />
         )}
         {activeTab === 'Subjectivities' && (

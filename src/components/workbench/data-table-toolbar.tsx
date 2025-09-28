@@ -24,6 +24,9 @@ interface DataTableToolbarProps<TData> {
   onFilterChange?: (key: keyof WorkItemFilters, value: string) => void;
   onResetFilters?: () => void;
   hasActiveFilters?: boolean;
+  // New refresh functionality
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
 }
 
 export function DataTableToolbar<TData>({
@@ -34,6 +37,8 @@ export function DataTableToolbar<TData>({
   onFilterChange,
   onResetFilters,
   hasActiveFilters = false,
+  onRefresh,
+  isRefreshing = false,
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
   const selectedRows = table.getFilteredSelectedRowModel().rows;
@@ -43,8 +48,14 @@ export function DataTableToolbar<TData>({
       {/* Main toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex flex-1 items-center space-x-2">
-          <Button variant="ghost" size="icon">
-              <RefreshCw className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onRefresh}
+            disabled={isRefreshing}
+            title="Refresh data"
+          >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
           </Button>
           {selectedRows.length > 0 && (
             <Button

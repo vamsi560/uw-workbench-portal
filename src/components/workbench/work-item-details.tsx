@@ -25,6 +25,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RiskScore, RiskBreakdown } from "./risk-score";
 import { CommentsSystem, Comment } from "./comments-system";
 import { WorkItemAssignment, Underwriter } from "./work-item-assignment";
+import { InlineEdit } from "./inline-edit";
+import { AssignmentApprovalDialog } from "./assignment-approval-dialog";
 
 interface WorkItemDetailsProps {
   workItem: WorkItem;
@@ -69,6 +71,15 @@ export function WorkItemDetails({
   const [isSaved, setIsSaved] = React.useState(false);
   const [comments, setComments] = React.useState<Comment[]>([]);
   
+  // Editable work item state
+  const [editableWorkItem, setEditableWorkItem] = React.useState<WorkItem>(workItem);
+  const [editableSubmission, setEditableSubmission] = React.useState<Submission>(submission);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = React.useState(false);
+  
+  // Assignment approval dialog state
+  const [showApprovalDialog, setShowApprovalDialog] = React.useState(false);
+  const [pendingUnderwriter, setPendingUnderwriter] = React.useState<string>("");
+  
   // Get extracted fields if this work item came from polling
   const extractedFields = workItem.extractedFields || {};
 
@@ -109,10 +120,22 @@ export function WorkItemDetails({
     }
   ];
 
+  // Field update handlers
+  const handleWorkItemFieldUpdate = (field: keyof WorkItem, value: any) => {
+    setEditableWorkItem(prev => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleSubmissionFieldUpdate = (field: keyof Submission, value: any) => {
+    setEditableSubmission(prev => ({ ...prev, [field]: value }));
+    setHasUnsavedChanges(true);
+  };
+
   const handleSave = () => {
     if (onSave) {
-      onSave(workItem, submission);
+      onSave(editableWorkItem, editableSubmission);
       setIsSaved(true);
+      setHasUnsavedChanges(false);
     }
   };
 
@@ -129,8 +152,31 @@ export function WorkItemDetails({
   };
 
   const handleAssignWorkItem = (underwriterId: string) => {
-    // In real app, this would call an API
-    console.log(`Assigning work item ${workItem.id} to underwriter ${underwriterId}`);
+    // Show approval dialog instead of directly assigning
+    setPendingUnderwriter(underwriterId);
+    setShowApprovalDialog(true);
+  };
+
+  const handleApproveAssignment = () => {
+    // Update the work item with the new assignment
+    setEditableWorkItem(prev => ({ ...prev, assigned_to: pendingUnderwriter }));
+    setEditableSubmission(prev => ({ ...prev, underwriter: pendingUnderwriter }));
+    setHasUnsavedChanges(true);
+    
+    // In real app, this would create the submission and assign the underwriter
+    console.log(`Assignment approved: Work item ${workItem.id} assigned to ${pendingUnderwriter}`);
+    
+    // Call the save handler to create the submission
+    if (onSave) {
+      onSave({...editableWorkItem, assigned_to: pendingUnderwriter}, {...editableSubmission, underwriter: pendingUnderwriter});
+      setIsSaved(true);
+      setHasUnsavedChanges(false);
+    }
+  };
+
+  const handleCancelAssignment = () => {
+    setPendingUnderwriter("");
+    console.log("Assignment cancelled by user");
   };
 
   return (
@@ -191,11 +237,11 @@ export function WorkItemDetails({
             </div>
             <div className="flex items-center gap-2">
               <Button 
-                variant="outline" 
+                variant={hasUnsavedChanges ? "default" : "outline"}
                 onClick={handleSave}
-                disabled={isSaved}
+                disabled={isSaved && !hasUnsavedChanges}
               >
-                {isSaved ? 'Saved ✓' : 'Save'}
+                {hasUnsavedChanges ? 'Save Changes' : (isSaved ? 'Saved ✓' : 'Save')}
               </Button>
               <Button variant="outline">Reassign</Button>
             </div>
@@ -204,37 +250,62 @@ export function WorkItemDetails({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
             <div>
                 <p className="text-sm text-muted-foreground">Type</p>
-                <p>{workItem.type}</p>
+                <InlineEdit
+                  value={editableWorkItem.type || ""}
+                  onSave={(value) => handleWorkItemFieldUpdate('type', value)}
+                  type="select"
+                  options={[
+                    { value: "New Submission", label: "New Submission" },
+                    { value: "Renewal", label: "Renewal" },
+                    { value: "Endorsement", label: "Endorsement" },
+                    { value: "Cancellation", label: "Cancellation" }
+                  ]}
+                />
             </div>
             <div>
                 <p className="text-sm text-muted-foreground">Priority</p>
-                <Select defaultValue={workItem.priority}>
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="High">High</SelectItem>
-                        <SelectItem value="Medium">Medium</SelectItem>
-                        <SelectItem value="Low">Low</SelectItem>
-                    </SelectContent>
-                </Select>
+                <InlineEdit
+                  value={editableWorkItem.priority}
+                  onSave={(value) => handleWorkItemFieldUpdate('priority', value)}
+                  type="select"
+                  options={[
+                    { value: "Critical", label: "Critical" },
+                    { value: "High", label: "High" },
+                    { value: "Medium", label: "Medium" },
+                    { value: "Low", label: "Low" }
+                  ]}
+                />
             </div>
             <div>
                 <p className="text-sm text-muted-foreground">GWPC Status</p>
-                <p>{workItem.gwpcStatus}</p>
+                <InlineEdit
+                  value={editableWorkItem.gwpcStatus || ""}
+                  onSave={(value) => handleWorkItemFieldUpdate('gwpcStatus', value)}
+                  type="select"
+                  options={[
+                    { value: "Pending", label: "Pending" },
+                    { value: "In Progress", label: "In Progress" },
+                    { value: "Completed", label: "Completed" },
+                    { value: "Failed", label: "Failed" }
+                  ]}
+                />
             </div>
              <div>
                 <p className="text-sm text-muted-foreground">Status</p>
-                 <Select defaultValue={workItem.status}>
-                    <SelectTrigger>
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="WIP">WIP</SelectItem>
-                        <SelectItem value="Done">Done</SelectItem>
-                         <SelectItem value="To Do">To Do</SelectItem>
-                    </SelectContent>
-                </Select>
+                <InlineEdit
+                  value={editableWorkItem.status}
+                  onSave={(value) => handleWorkItemFieldUpdate('status', value)}
+                  type="select"
+                  options={[
+                    { value: "Pending", label: "Pending" },
+                    { value: "In Review", label: "In Review" },
+                    { value: "Approved", label: "Approved" },
+                    { value: "Rejected", label: "Rejected" },
+                    { value: "To Do", label: "To Do" },
+                    { value: "WIP", label: "WIP" },
+                    { value: "Done", label: "Done" }
+                  ]}
+                />
             </div>
           </div>
            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-4">
@@ -290,28 +361,81 @@ export function WorkItemDetails({
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Insured Name</p>
-                      <p>{submission.insuredName}</p>
+                      <InlineEdit
+                        value={editableSubmission.insuredName}
+                        onSave={(value) => handleSubmissionFieldUpdate('insuredName', value)}
+                        placeholder="Enter insured name"
+                      />
                     </div>
                     <div>
                       <p className="text-muted-foreground">Country</p>
-                      <p>United States</p>
+                      <InlineEdit
+                        value="United States"
+                        onSave={(value) => {/* Handle country update */}}
+                        placeholder="Enter country"
+                      />
                     </div>
                     <div>
                       <p className="text-muted-foreground">Effective Date</p>
-                      <p>{submission.effectiveDate}</p>
+                      <InlineEdit
+                        value={editableSubmission.effectiveDate}
+                        onSave={(value) => handleSubmissionFieldUpdate('effectiveDate', value)}
+                        placeholder="Enter effective date"
+                      />
                     </div>
-                    <div></div>
+                    <div>
+                      <p className="text-muted-foreground">Underwriter</p>
+                      <InlineEdit
+                        value={editableSubmission.underwriter}
+                        onSave={(value) => handleSubmissionFieldUpdate('underwriter', value)}
+                        type="select"
+                        options={[
+                          { value: "underwriter_john", label: "John Smith" },
+                          { value: "underwriter_jane", label: "Jane Doe" },
+                          { value: "underwriter_alex", label: "Alex Johnson" },
+                          { value: "Auto-Assigned", label: "Auto-Assigned" }
+                        ]}
+                      />
+                    </div>
                     <div>
                       <p className="text-muted-foreground">Account #</p>
-                      <p>A111288</p>
+                      <InlineEdit
+                        value="A111288"
+                        onSave={(value) => {/* Handle account update */}}
+                        placeholder="Enter account number"
+                      />
                     </div>
                     <div>
                       <p className="text-muted-foreground">Address</p>
-                      <p>123 Davidson Ave, Somerset, New Jersey, United States, 08854</p>
+                      <InlineEdit
+                        value="123 Davidson Ave, Somerset, New Jersey, United States, 08854"
+                        onSave={(value) => {/* Handle address update */}}
+                        type="textarea"
+                        placeholder="Enter address"
+                      />
                     </div>
                     <div>
                       <p className="text-muted-foreground">Expiration Date</p>
-                      <p>{submission.expiryDate}</p>
+                      <InlineEdit
+                        value={editableSubmission.expiryDate}
+                        onSave={(value) => handleSubmissionFieldUpdate('expiryDate', value)}
+                        placeholder="Enter expiration date"
+                      />
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Status</p>
+                      <InlineEdit
+                        value={editableSubmission.status}
+                        onSave={(value) => handleSubmissionFieldUpdate('status', value)}
+                        type="select"
+                        options={[
+                          { value: "New", label: "New" },
+                          { value: "In Review", label: "In Review" },
+                          { value: "Approved", label: "Approved" },
+                          { value: "Rejected", label: "Rejected" },
+                          { value: "Processed", label: "Processed" }
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>
@@ -351,16 +475,27 @@ export function WorkItemDetails({
           </div>
           <div className="flex justify-end gap-2 mt-8">
             <Button 
-              variant="outline" 
+              variant={hasUnsavedChanges ? "default" : "outline"}
               onClick={handleSave}
-              disabled={isSaved}
+              disabled={isSaved && !hasUnsavedChanges}
             >
-              {isSaved ? 'Saved ✓' : 'Save'}
+              {hasUnsavedChanges ? 'Save Changes' : (isSaved ? 'Saved ✓' : 'Save')}
             </Button>
             <Button>Next</Button>
           </div>
         </div>
       </div>
+
+      {/* Assignment Approval Dialog */}
+      <AssignmentApprovalDialog
+        isOpen={showApprovalDialog}
+        onOpenChange={setShowApprovalDialog}
+        workItem={editableWorkItem}
+        submission={editableSubmission}
+        underwriter={pendingUnderwriter}
+        onApprove={handleApproveAssignment}
+        onCancel={handleCancelAssignment}
+      />
     </div>
   );
 }
