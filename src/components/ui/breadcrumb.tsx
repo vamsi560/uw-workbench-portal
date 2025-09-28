@@ -13,7 +13,7 @@ export interface BreadcrumbProps {
 export function Breadcrumb({ items }: BreadcrumbProps) {
   return (
     <nav aria-label="Breadcrumb" className="flex items-center text-sm gap-2">
-      {items.map((item, idx) => (
+      {(items || []).map((item, idx) => (
         <React.Fragment key={item.label + idx}>
           {idx > 0 && (
             <ChevronRight className="mx-1 h-4 w-4 text-muted-foreground" />
