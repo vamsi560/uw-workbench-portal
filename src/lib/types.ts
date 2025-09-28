@@ -36,6 +36,7 @@ export type WorkItem = {
   automationStatus: string;
   exposureStatus: string;
   submissionId: string;
+  extractedFields?: Record<string, any>;
 };
 
 // WebSocket event types for real-time updates

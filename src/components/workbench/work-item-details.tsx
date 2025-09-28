@@ -26,6 +26,7 @@ interface WorkItemDetailsProps {
   workItem: WorkItem;
   submission: Submission;
   onBack: () => void;
+  onSave?: (workItem: WorkItem, submission: Submission) => void;
 }
 
 const InfoCard = ({
@@ -58,8 +59,20 @@ export function WorkItemDetails({
   workItem,
   submission,
   onBack,
+  onSave,
 }: WorkItemDetailsProps) {
   const [activeTab, setActiveTab] = React.useState("Submission");
+  const [isSaved, setIsSaved] = React.useState(false);
+  
+  // Get extracted fields if this work item came from polling
+  const extractedFields = workItem.extractedFields || {};
+
+  const handleSave = () => {
+    if (onSave) {
+      onSave(workItem, submission);
+      setIsSaved(true);
+    }
+  };
 
   return (
     <div className="bg-background">
@@ -169,6 +182,22 @@ export function WorkItemDetails({
                 </div>
            </div>
 
+          {/* Extracted Fields Section */}
+          {Object.keys(extractedFields).length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-4">Extracted Information</h3>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-4 bg-muted/50 rounded-md border">
+                {Object.entries(extractedFields).map(([key, value]) => (
+                  <div key={key}>
+                    <p className="text-sm text-muted-foreground capitalize">
+                      {key.replace(/_/g, ' ')}
+                    </p>
+                    <p className="font-medium">{value as string}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Tabs */}
           <div className="mt-8">
@@ -238,7 +267,13 @@ export function WorkItemDetails({
             )}
           </div>
           <div className="flex justify-end gap-2 mt-8">
-            <Button variant="outline">Save</Button>
+            <Button 
+              variant="outline" 
+              onClick={handleSave}
+              disabled={isSaved}
+            >
+              {isSaved ? 'Saved ✓' : 'Save'}
+            </Button>
             <Button>Next</Button>
           </div>
         </div>

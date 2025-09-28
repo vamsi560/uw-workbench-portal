@@ -9,9 +9,10 @@ interface WorkbenchTabsProps {
     onTasksClick: () => void;
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    workItemCount?: number;
 }
 
-export function WorkbenchTabs({ onTasksClick, activeTab, setActiveTab }: WorkbenchTabsProps) {
+export function WorkbenchTabs({ onTasksClick, activeTab, setActiveTab, workItemCount = 0 }: WorkbenchTabsProps) {
   const tabs = ["My Submissions", "Work Items", "Tasks", "Subjectivities", "All Submissions", "Portfolio Management", "Dashboard", "SSE Test", "Work Item Test"];
 
   const handleTabClick = (tab: string) => {
@@ -45,7 +46,7 @@ export function WorkbenchTabs({ onTasksClick, activeTab, setActiveTab }: Workben
               <Badge className="ml-2 bg-primary text-primary-foreground">9</Badge>
             )}
              {tab === "Work Items" && (
-              <Badge className="ml-2 bg-accent text-accent-foreground">4</Badge>
+              <Badge className="ml-2 bg-accent text-accent-foreground">{workItemCount}</Badge>
             )}
              {tab === "Work Item Test" && (
               <Badge className="ml-2 bg-green-500 text-white">Test</Badge>

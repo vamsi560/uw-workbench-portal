@@ -73,23 +73,44 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
 
   const { isPolling, error } = usePolling(handleNewItems, config.polling.intervalMs);
 
+  // Helper functions to determine work item properties from extracted data
+  const determineWorkItemType = useCallback((extractedFields?: Record<string, any>) => {
+    if (!extractedFields) return 'Email Review';
+    
+    const policyType = extractedFields.policy_type?.toLowerCase() || '';
+    if (policyType.includes('cyber')) return 'Cyber Exposure Review';
+    if (policyType.includes('liability')) return 'Liability Assessment';
+    if (policyType.includes('property')) return 'Property Evaluation';
+    return 'Policy Review';
+  }, []);
+
+  const determinePriority = useCallback((extractedFields?: Record<string, any>) => {
+    if (!extractedFields) return 'Medium';
+    
+    const coverageAmount = extractedFields.coverage_amount || '';
+    if (coverageAmount.toLowerCase().includes('high') || coverageAmount.includes('1,000,000')) return 'High';
+    if (coverageAmount.toLowerCase().includes('medium') || coverageAmount.includes('500,000')) return 'Medium';
+    return 'Low';
+  }, []);
+
   // Add new work item to the main work items list
   const addNewWorkItem = useCallback((workItem: WorkItemUpdate) => {
     const newWorkItem: WorkItem = {
       id: workItem.id,
-      owner: workItem.owner || 'System',
-      type: workItem.type || 'New Submission',
-      priority: workItem.priority || 'Medium',
-      gwpcStatus: workItem.gwpcStatus || 'Pending',
+      owner: workItem.owner || 'System Generated',
+      type: workItem.type || determineWorkItemType(workItem.extracted_fields),
+      priority: workItem.priority || determinePriority(workItem.extracted_fields),
+      gwpcStatus: workItem.gwpcStatus || 'Pending Review',
       status: workItem.status,
       indicated: workItem.indicated || false,
-      automationStatus: workItem.automationStatus || 'Not Applicable',
-      exposureStatus: workItem.exposureStatus || 'New',
+      automationStatus: workItem.automationStatus || 'Automated',
+      exposureStatus: workItem.exposureStatus || 'New Exposure',
       submissionId: workItem.submission_ref,
+      extractedFields: workItem.extracted_fields,
     };
 
     setWorkItems(prev => [newWorkItem, ...prev]);
-  }, []);
+  }, [determineWorkItemType, determinePriority]);
 
   // Remove work item from new items list
   const acknowledgeNewWorkItem = useCallback((workItemId: string) => {

@@ -39,7 +39,7 @@ const subjectivitiesData = [
 
 export function WorkbenchClient() {
   const { toast } = useToast();
-  const [submissions] = React.useState<Submission[]>(defaultSubmissions);
+  const [submissions, setSubmissions] = React.useState<Submission[]>(defaultSubmissions);
   const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
   
   // Real-time work item updates (Polling)
@@ -62,12 +62,36 @@ export function WorkbenchClient() {
   const [isSummarizing, setIsSummarizing] = React.useState<boolean>(false);
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = React.useState<boolean>(false);
 
-  // Handle new work items from SSE
+  // Handle new work items from polling
   React.useEffect(() => {
     if (newWorkItems.length > 0) {
       // Add new work items to the main work items list
       newWorkItems.forEach(newItem => {
         addNewWorkItem(newItem);
+        
+        // Create a new submission for this work item if it doesn't exist
+        const submissionId = `S${newItem.submission_id}`;
+        const existingSubmission = submissions.find(s => s.id === submissionId);
+        
+        if (!existingSubmission && newItem.extracted_fields) {
+          const newSubmission: Submission = {
+            id: submissionId,
+            taskPending: 'Yes',
+            effectiveDate: newItem.extracted_fields.effective_date || 'TBD',
+            expiryDate: newItem.extracted_fields.expiry_date || 'TBD',
+            insuredName: newItem.extracted_fields.insured_name || 'Unknown Insured',
+            underwriter: 'Auto-Assigned',
+            status: 'New',
+            new: 'Yes',
+            producer: newItem.extracted_fields.broker || 'Unknown',
+            producerInternal: 'System',
+            mfaEnforced: 'No',
+          };
+          
+          // Add new submission to the list (this would normally come from an API)
+          setSubmissions(prev => [newSubmission, ...prev]);
+        }
+        
         // Convert and add to workItems state
         const workItem: WorkItem = {
           id: newItem.id,
@@ -79,7 +103,8 @@ export function WorkbenchClient() {
           indicated: newItem.indicated || false,
           automationStatus: newItem.automationStatus || 'Not Applicable',
           exposureStatus: newItem.exposureStatus || 'New',
-          submissionId: newItem.submission_ref,
+          submissionId: submissionId, // Use the formatted submission ID
+          extractedFields: newItem.extracted_fields,
         };
         setWorkItems(prev => [workItem, ...prev]);
         acknowledgeNewWorkItem(newItem.id);
@@ -132,6 +157,50 @@ export function WorkbenchClient() {
   const handleViewWorkItem = (workItem: WorkItem) => {
     setSelectedWorkItem(workItem);
   };
+
+  const handleSaveWorkItem = (workItem: WorkItem, workItemSubmission: Submission) => {
+    // Create a new submission based on the work item and its extracted data
+    const newSubmission: Submission = {
+      id: workItemSubmission.id,
+      taskPending: 'No', // Mark as processed since it's been saved
+      effectiveDate: workItemSubmission.effectiveDate,
+      expiryDate: workItemSubmission.expiryDate,
+      insuredName: workItemSubmission.insuredName,
+      underwriter: workItemSubmission.underwriter,
+      status: 'Processed', // Update status to show it's been processed
+      new: 'No', // No longer new since it's been saved
+      producer: workItemSubmission.producer,
+      producerInternal: workItemSubmission.producerInternal,
+      mfaEnforced: workItemSubmission.mfaEnforced,
+    };
+
+    // Add to submissions list if not already there
+    setSubmissions(prev => {
+      const existingIndex = prev.findIndex(s => s.id === newSubmission.id);
+      if (existingIndex !== -1) {
+        // Update existing submission
+        const updated = [...prev];
+        updated[existingIndex] = newSubmission;
+        return updated;
+      } else {
+        // Add new submission
+        return [newSubmission, ...prev];
+      }
+    });
+
+    // Remove from work items since it's now a submission
+    setWorkItems(prev => prev.filter(wi => wi.id !== workItem.id));
+
+    // Show success message
+    toast({
+      title: "Work Item Saved",
+      description: `Work item ${workItem.id} has been saved as submission ${newSubmission.id}`,
+      duration: 3000,
+    });
+
+    // Go back to main view
+    handleBackToWorkbench();
+  };
   
   const submissionColumns = getColumns(handleViewSubmission);
   const workItemColumns = getWorkItemColumns(handleViewWorkItem);
@@ -145,10 +214,35 @@ export function WorkbenchClient() {
   }
 
   if (selectedWorkItem) {
-    const submissionForWorkItem = submissions.find(s => s.id === selectedWorkItem.submissionId);
+    let submissionForWorkItem = submissions.find(s => s.id === selectedWorkItem.submissionId);
+    
+    // If no submission found and work item has extracted fields, create a temporary one
+    if (!submissionForWorkItem && selectedWorkItem.extractedFields) {
+      submissionForWorkItem = {
+        id: selectedWorkItem.submissionId,
+        taskPending: 'Yes',
+        effectiveDate: selectedWorkItem.extractedFields.effective_date || 'TBD',
+        expiryDate: selectedWorkItem.extractedFields.expiry_date || 'TBD',
+        insuredName: selectedWorkItem.extractedFields.insured_name || 'Unknown Insured',
+        underwriter: 'Auto-Assigned',
+        status: 'New',
+        new: 'Yes',
+        producer: selectedWorkItem.extractedFields.broker || 'Unknown',
+        producerInternal: 'System',
+        mfaEnforced: 'No',
+      };
+    }
+    
     return (
       <main>
-        {submissionForWorkItem && <WorkItemDetails workItem={selectedWorkItem} submission={submissionForWorkItem} onBack={handleBackToWorkbench} />}
+        {submissionForWorkItem && (
+          <WorkItemDetails 
+            workItem={selectedWorkItem} 
+            submission={submissionForWorkItem} 
+            onBack={handleBackToWorkbench}
+            onSave={handleSaveWorkItem}
+          />
+        )}
       </main>
     )
   }
@@ -183,7 +277,12 @@ export function WorkbenchClient() {
             </span>
           </div>
         </div>
-        <WorkbenchTabs onTasksClick={() => setIsSheetOpen(true)} activeTab={activeTab} setActiveTab={setActiveTab} />
+        <WorkbenchTabs 
+          onTasksClick={() => setIsSheetOpen(true)} 
+          activeTab={activeTab} 
+          setActiveTab={setActiveTab}
+          workItemCount={workItems.length}
+        />
         {activeTab === 'My Submissions' && (
           <DataTable
             columns={submissionColumns}
