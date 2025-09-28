@@ -12,7 +12,7 @@ interface WorkbenchTabsProps {
 }
 
 export function WorkbenchTabs({ onTasksClick, activeTab, setActiveTab }: WorkbenchTabsProps) {
-  const tabs = ["My Submissions", "Work Items", "Tasks", "Subjectivities", "All Submissions", "Portfolio Management", "Dashboard", "WebSocket Test"];
+  const tabs = ["My Submissions", "Work Items", "Tasks", "Subjectivities", "All Submissions", "Portfolio Management", "Dashboard", "SSE Test", "Work Item Test"];
 
   const handleTabClick = (tab: string) => {
     setActiveTab(tab);
@@ -46,6 +46,9 @@ export function WorkbenchTabs({ onTasksClick, activeTab, setActiveTab }: Workben
             )}
              {tab === "Work Items" && (
               <Badge className="ml-2 bg-accent text-accent-foreground">4</Badge>
+            )}
+             {tab === "Work Item Test" && (
+              <Badge className="ml-2 bg-green-500 text-white">Test</Badge>
             )}
           </button>
         ))}

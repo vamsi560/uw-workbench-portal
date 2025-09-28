@@ -27,7 +27,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useWorkItemUpdates } from "@/hooks/use-workitem-updates";
 import { Dashboard } from "./dashboard";
-import { WebSocketTest } from "./websocket-test";
+import { SseTest } from "./sse-test";
+import { WorkItemCreationTest } from "./workitem-creation-test";
 
 const subjectivitiesData = [
   { id: 'SUBJ-001', submission: 'S345821', type: 'Inspection', status: 'Pending', dueDate: '08/15/2025' },
@@ -41,16 +42,14 @@ export function WorkbenchClient() {
   const [submissions] = React.useState<Submission[]>(defaultSubmissions);
   const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
   
-  // Real-time work item updates
+  // Real-time work item updates (SSE)
   const {
     newWorkItems,
     addNewWorkItem,
     acknowledgeNewWorkItem,
     clearNewWorkItems,
-    websocket,
   } = useWorkItemUpdates({
     enableNotifications: true,
-    autoConnect: true,
   });
   const [rowSelection, setRowSelection] = React.useState({});
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
@@ -61,7 +60,7 @@ export function WorkbenchClient() {
   const [isSummarizing, setIsSummarizing] = React.useState<boolean>(false);
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = React.useState<boolean>(false);
 
-  // Handle new work items from WebSocket
+  // Handle new work items from SSE
   React.useEffect(() => {
     if (newWorkItems.length > 0) {
       // Add new work items to the main work items list
@@ -233,8 +232,11 @@ export function WorkbenchClient() {
         {activeTab === 'Dashboard' && (
           <Dashboard />
         )}
-        {activeTab === 'WebSocket Test' && (
-          <WebSocketTest />
+        {activeTab === 'SSE Test' && (
+          <SseTest />
+        )}
+        {activeTab === 'Work Item Test' && (
+          <WorkItemCreationTest />
         )}
         <AddTaskSheet isOpen={isSheetOpen} onOpenChange={setIsSheetOpen} />
          <AlertDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>

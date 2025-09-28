@@ -1,23 +1,17 @@
 "use client";
 
 import { useState, useCallback } from 'react';
-import { useWebSocket } from './use-websocket';
 import { WorkItem, NewWorkItemEvent, WorkItemUpdate } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { getWebSocketUrl } from '@/lib/config';
 import { useSse } from './use-sse';
 
 export interface UseWorkItemUpdatesOptions {
-  websocketUrl?: string;
   enableNotifications?: boolean;
-  autoConnect?: boolean;
 }
 
 export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
   const {
-    websocketUrl = getWebSocketUrl(),
     enableNotifications = true,
-    autoConnect = false,
   } = options;
 
   const { toast } = useToast();
@@ -55,12 +49,6 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     }
   }, [enableNotifications, toast]);
 
-  const handleWebSocketMessage = useCallback((event: any) => {
-    if (event.event === 'new_workitem') {
-      handleNewWorkItem(event as NewWorkItemEvent);
-    }
-  }, [handleNewWorkItem]);
-
   // SSE primary transport
   const handleSseMessage = useCallback((msg: any) => {
     if (msg?.event === 'new_workitem') {
@@ -69,45 +57,6 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
   }, [handleNewWorkItem]);
 
   const { connected: sseConnected } = useSse(handleSseMessage);
-
-  const handleWebSocketError = useCallback((error: Event) => {
-    console.error('WebSocket error:', error);
-    if (enableNotifications) {
-      toast({
-        title: "Connection Error",
-        description: "Lost connection to real-time updates. Attempting to reconnect...",
-        variant: "destructive",
-        duration: 3000,
-      });
-    }
-  }, [enableNotifications, toast]);
-
-  const handleWebSocketConnect = useCallback(() => {
-    console.log('Connected to work item updates');
-    if (enableNotifications) {
-      toast({
-        title: "Connected",
-        description: "Real-time updates are now active",
-        duration: 2000,
-      });
-    }
-  }, [enableNotifications, toast]);
-
-  const handleWebSocketDisconnect = useCallback(() => {
-    console.log('Disconnected from work item updates');
-  }, []);
-
-  // Optional WebSocket fallback (kept disabled by default)
-  const websocket = useWebSocket({
-    url: websocketUrl,
-    onMessage: handleWebSocketMessage,
-    onConnect: handleWebSocketConnect,
-    onDisconnect: handleWebSocketDisconnect,
-    onError: handleWebSocketError,
-    autoConnect,
-    reconnectInterval: 3000,
-    maxReconnectAttempts: 5,
-  });
 
   // Add new work item to the main work items list
   const addNewWorkItem = useCallback((workItem: WorkItemUpdate) => {
@@ -143,8 +92,6 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     addNewWorkItem,
     acknowledgeNewWorkItem,
     clearNewWorkItems,
-    // unified connection status prioritizing SSE
-    connected: sseConnected || websocket.isConnected,
-    websocket,
+    connected: sseConnected,
   };
 }
