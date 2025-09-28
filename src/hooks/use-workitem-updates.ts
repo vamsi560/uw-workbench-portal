@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { useWebSocket } from './use-websocket';
 import { WorkItem, NewWorkItemEvent, WorkItemUpdate } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { getWebSocketUrl } from '@/lib/config';
+import { useSse } from './use-sse';
 
 export interface UseWorkItemUpdatesOptions {
   websocketUrl?: string;
@@ -16,7 +17,7 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
   const {
     websocketUrl = getWebSocketUrl(),
     enableNotifications = true,
-    autoConnect = true,
+    autoConnect = false,
   } = options;
 
   const { toast } = useToast();
@@ -60,6 +61,15 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     }
   }, [handleNewWorkItem]);
 
+  // SSE primary transport
+  const handleSseMessage = useCallback((msg: any) => {
+    if (msg?.event === 'new_workitem') {
+      handleNewWorkItem(msg as NewWorkItemEvent);
+    }
+  }, [handleNewWorkItem]);
+
+  const { connected: sseConnected } = useSse(handleSseMessage);
+
   const handleWebSocketError = useCallback((error: Event) => {
     console.error('WebSocket error:', error);
     if (enableNotifications) {
@@ -87,6 +97,7 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     console.log('Disconnected from work item updates');
   }, []);
 
+  // Optional WebSocket fallback (kept disabled by default)
   const websocket = useWebSocket({
     url: websocketUrl,
     onMessage: handleWebSocketMessage,
@@ -132,6 +143,8 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     addNewWorkItem,
     acknowledgeNewWorkItem,
     clearNewWorkItems,
+    // unified connection status prioritizing SSE
+    connected: sseConnected || websocket.isConnected,
     websocket,
   };
 }

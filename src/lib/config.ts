@@ -3,17 +3,17 @@
  */
 
 export const config = {
-  // WebSocket URL - using your actual backend URL
-  websocketUrl: process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'wss://uw-workbench-jade.vercel.app/ws/workitems',
+  // HARD-CODED URLs (switch to env later)
+  sseUrl: 'https://uw-workbench-jade.vercel.app/sse/workitems',
+  websocketUrl: 'wss://uw-workbench-jade.vercel.app/ws/workitems',
+  apiUrl: 'https://uw-workbench-jade.vercel.app',
   
-  // API URL for other endpoints
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'https://uw-workbench-jade.vercel.app',
-  
-  // WebSocket connection settings
-  websocket: {
-    reconnectInterval: 3000,
+  // Realtime connection settings
+  realtime: {
+    reconnectIntervalMs: 3000,
     maxReconnectAttempts: 5,
     autoConnect: true,
+    websocketFallbackDelayMs: 8000,
   },
   
   // Development settings
@@ -21,12 +21,13 @@ export const config = {
 };
 
 // Helper function to get WebSocket URL based on environment
+export function getSseUrl(): string {
+  // Always use hardcoded for now
+  return config.sseUrl;
+}
+
 export function getWebSocketUrl(): string {
-  if (config.isDevelopment) {
-    // For local development, you might want to use a different URL
-    return process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'ws://localhost:8000/ws/workitems';
-  }
-  
+  // Always use hardcoded for now
   return config.websocketUrl;
 }
 
