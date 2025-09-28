@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useWorkItemUpdates } from "@/hooks/use-workitem-updates";
+import { useWorkItemFilters } from "@/hooks/use-workitem-filters";
 import { Dashboard } from "./dashboard";
 import { SseTest } from "./sse-test";
 import { WorkItemCreationTest } from "./workitem-creation-test";
@@ -42,7 +43,16 @@ export function WorkbenchClient() {
   const [submissions, setSubmissions] = React.useState<Submission[]>(defaultSubmissions);
   const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
   
-  // Real-time work item updates (Polling)
+  // Work item filtering
+  const {
+    filters,
+    updateFilter,
+    resetFilters,
+    hasActiveFilters,
+    getApiFilters,
+  } = useWorkItemFilters();
+  
+  // Real-time work item updates (Polling) with filtering
   const {
     newWorkItems,
     addNewWorkItem,
@@ -52,6 +62,7 @@ export function WorkbenchClient() {
     error,
   } = useWorkItemUpdates({
     enableNotifications: true,
+    filters: getApiFilters(),
   });
   const [rowSelection, setRowSelection] = React.useState({});
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
@@ -92,18 +103,45 @@ export function WorkbenchClient() {
           setSubmissions(prev => [newSubmission, ...prev]);
         }
         
-        // Convert and add to workItems state
+        // Convert and add to workItems state with enhanced fields
         const workItem: WorkItem = {
+          // Core identifiers
           id: newItem.id,
+          submission_id: newItem.submission_id,
+          submission_ref: newItem.submission_ref,
+          
+          // Basic work item data
+          title: newItem.title || newItem.subject || 'New Work Item',
+          description: newItem.description,
+          status: newItem.status,
+          priority: newItem.priority || 'Medium',
+          assigned_to: newItem.assigned_to,
+          
+          // Cyber insurance specific fields
+          risk_score: newItem.risk_score,
+          risk_categories: newItem.risk_categories,
+          industry: newItem.industry,
+          company_size: newItem.company_size,
+          policy_type: newItem.policy_type,
+          coverage_amount: newItem.coverage_amount,
+          last_risk_assessment: newItem.last_risk_assessment,
+          
+          // Collaboration data
+          comments_count: newItem.comments_count || 0,
+          has_urgent_comments: newItem.has_urgent_comments || false,
+          
+          // Timestamps
+          created_at: newItem.created_at,
+          updated_at: newItem.updated_at,
+          
+          // Legacy fields for backward compatibility
           owner: newItem.owner || 'System',
           type: newItem.type || 'New Submission',
-          priority: newItem.priority || 'Medium',
           gwpcStatus: newItem.gwpcStatus || 'Pending',
-          status: newItem.status,
           indicated: newItem.indicated || false,
           automationStatus: newItem.automationStatus || 'Not Applicable',
           exposureStatus: newItem.exposureStatus || 'New',
-          submissionId: submissionId, // Use the formatted submission ID
+          submissionId: submissionId,
           extractedFields: newItem.extracted_fields,
         };
         setWorkItems(prev => [workItem, ...prev]);
@@ -302,6 +340,10 @@ export function WorkbenchClient() {
             setTable={(t) => (workItemTableRef = t)}
             onSummarize={handleSummarize}
             isWorkItems={true}
+            filters={filters}
+            onFilterChange={updateFilter}
+            onResetFilters={resetFilters}
+            hasActiveFilters={hasActiveFilters}
           />
         )}
         {activeTab === 'All Submissions' && (

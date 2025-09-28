@@ -72,15 +72,14 @@ export function WorkItemDetails({
   // Get extracted fields if this work item came from polling
   const extractedFields = workItem.extractedFields || {};
 
-  // Mock data for cyber risk assessment
-  const riskScore = workItem.riskScore || 75;
-  const riskCategories = workItem.riskCategories || [
-    { name: "Data Exposure", score: 80, weight: 30 },
-    { name: "System Vulnerabilities", score: 65, weight: 25 },
-    { name: "Industry Risk", score: 85, weight: 20 },
-    { name: "Compliance Status", score: 70, weight: 15 },
-    { name: "Incident History", score: 60, weight: 10 }
-  ];
+  // Get risk data from work item (supports both backend formats)
+  const riskScore = workItem.risk_score || workItem.riskScore || 75;
+  const riskCategories = workItem.risk_categories || workItem.riskCategories || {
+    technical: 80,
+    operational: 65,
+    financial: 70,
+    compliance: 85
+  };
 
   // Mock underwriters data
   const underwriters: Underwriter[] = [

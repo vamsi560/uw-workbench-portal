@@ -29,6 +29,7 @@ import {
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableToolbar } from "./data-table-toolbar";
 import { Submission } from "@/lib/types";
+import { WorkItemFilters } from "@/hooks/use-workitem-filters";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 
@@ -40,6 +41,11 @@ interface DataTableProps<TData, TValue> {
   setTable: (table: TanstackTable<TData>) => void;
   onSummarize: (selectedRows: Row<TData>[]) => void;
   isWorkItems?: boolean;
+  // New filtering props
+  filters?: WorkItemFilters;
+  onFilterChange?: (key: keyof WorkItemFilters, value: string) => void;
+  onResetFilters?: () => void;
+  hasActiveFilters?: boolean;
 }
 
 function Filter({
@@ -69,6 +75,10 @@ export function DataTable<TData, TValue>({
   setTable,
   onSummarize,
   isWorkItems = false,
+  filters,
+  onFilterChange,
+  onResetFilters,
+  hasActiveFilters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -99,7 +109,15 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-       <DataTableToolbar table={table} onSummarize={onSummarize} isWorkItems={isWorkItems} />
+       <DataTableToolbar 
+         table={table} 
+         onSummarize={onSummarize} 
+         isWorkItems={isWorkItems}
+         filters={filters}
+         onFilterChange={onFilterChange}
+         onResetFilters={onResetFilters}
+         hasActiveFilters={hasActiveFilters}
+       />
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-muted">

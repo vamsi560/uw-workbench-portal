@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Shield, AlertTriangle, Zap } from "lucide-react";
@@ -59,17 +60,40 @@ export function RiskScore({ score, size = "md", showDetails = false }: RiskScore
   );
 }
 
-// Component for detailed risk breakdown
+// Component for detailed risk breakdown - supports both formats
 interface RiskBreakdownProps {
   overallScore: number;
-  categories: {
+  categories?: {
     name: string;
     score: number;
     weight: number;
-  }[];
+  }[] | {
+    technical: number;
+    operational: number;
+    financial: number;
+    compliance: number;
+  };
 }
 
 export function RiskBreakdown({ overallScore, categories }: RiskBreakdownProps) {
+  // Convert backend object format to array format for display
+  const categoryArray = React.useMemo(() => {
+    if (!categories) return [];
+    
+    // If it's already an array (legacy format), use as-is
+    if (Array.isArray(categories)) {
+      return categories;
+    }
+    
+    // Convert backend object format to array
+    return [
+      { name: "Technical Security", score: categories.technical || 0, weight: 30 },
+      { name: "Operational Risk", score: categories.operational || 0, weight: 25 },
+      { name: "Financial Impact", score: categories.financial || 0, weight: 25 },
+      { name: "Compliance Status", score: categories.compliance || 0, weight: 20 },
+    ];
+  }, [categories]);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -78,7 +102,7 @@ export function RiskBreakdown({ overallScore, categories }: RiskBreakdownProps) 
       </div>
       
       <div className="space-y-3">
-        {categories.map((category) => (
+        {categoryArray.map((category) => (
           <div key={category.name} className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex justify-between items-center mb-1">
