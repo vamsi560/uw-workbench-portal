@@ -163,15 +163,13 @@ export function WorkItemDetails({
     setEditableSubmission(prev => ({ ...prev, underwriter: pendingUnderwriter }));
     setHasUnsavedChanges(true);
     
-    // In real app, this would create the submission and assign the underwriter
-    console.log(`Assignment approved: Work item ${workItem.id} assigned to ${pendingUnderwriter}`);
+    // In real app, this would set the assignment pending save
+    console.log(`Assignment approved: Work item ${workItem.id} assigned to ${pendingUnderwriter} - pending save`);
     
-    // Call the save handler to create the submission
-    if (onSave) {
-      onSave({...editableWorkItem, assigned_to: pendingUnderwriter}, {...editableSubmission, underwriter: pendingUnderwriter});
-      setIsSaved(true);
-      setHasUnsavedChanges(false);
-    }
+    // Clear the pending underwriter since assignment is now approved
+    setPendingUnderwriter("");
+    
+    // Note: Don't auto-save here - require user to click Save button
   };
 
   const handleCancelAssignment = () => {

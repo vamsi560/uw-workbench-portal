@@ -49,12 +49,12 @@ export function ProfessionalHeader({
   notificationCount = 3
 }: ProfessionalHeaderProps) {
   return (
-    <header className="sticky top-0 z-50 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85 border-b border-border/60">
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-blue-800 to-blue-900 border-b border-blue-700/50">
       {/* Top Bar */}
-      <div className="border-b border-border/30 bg-slate-50/50">
+      <div className="border-b border-blue-700/30 bg-blue-900/20">
         <div className="container mx-auto px-6 py-2">
           <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center space-x-6 text-muted-foreground">
+            <div className="flex items-center space-x-6 text-blue-100">
               <div className="flex items-center space-x-2">
                 <Globe className="h-4 w-4" />
                 <span>Global Portal</span>
@@ -62,11 +62,11 @@ export function ProfessionalHeader({
               <div>Last updated: {new Date().toLocaleString()}</div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="h-8 text-muted-foreground">
+              <Button variant="ghost" size="sm" className="h-8 text-blue-100 hover:bg-blue-700/50">
                 <HelpCircle className="h-4 w-4 mr-1" />
                 Help
               </Button>
-              <Button variant="ghost" size="sm" className="h-8 text-muted-foreground">
+              <Button variant="ghost" size="sm" className="h-8 text-blue-100 hover:bg-blue-700/50">
                 Support
               </Button>
             </div>
@@ -80,12 +80,12 @@ export function ProfessionalHeader({
           {/* Left Section - Logo & Navigation */}
           <div className="flex items-center space-x-8">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">UW</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-white to-blue-50 rounded-lg flex items-center justify-center shadow-lg">
+                <span className="text-blue-800 font-bold text-lg">UW</span>
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-foreground">Underwriting Workbench</h1>
-                <p className="text-sm text-muted-foreground">Cyber Insurance Portal</p>
+                <h1 className="text-xl font-semibold text-white">Underwriting Workbench</h1>
+                <p className="text-sm text-blue-200">Cyber Insurance Portal</p>
               </div>
             </div>
 
@@ -96,11 +96,11 @@ export function ProfessionalHeader({
                   <React.Fragment key={index}>
                     <BreadcrumbItem>
                       {item.href ? (
-                        <BreadcrumbLink href={item.href} className="text-muted-foreground hover:text-foreground">
+                        <BreadcrumbLink href={item.href} className="text-blue-200 hover:text-white">
                           {item.label}
                         </BreadcrumbLink>
                       ) : (
-                        <BreadcrumbPage className="font-medium text-foreground">
+                        <BreadcrumbPage className="font-medium text-white">
                           {item.label}
                         </BreadcrumbPage>
                       )}
@@ -116,17 +116,17 @@ export function ProfessionalHeader({
           <div className="flex items-center space-x-4">
             {/* Global Search */}
             <div className="relative hidden lg:block">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-blue-400" />
               <Input
                 placeholder="Search submissions, work items..."
-                className="w-80 pl-10 bg-background/50 border-border/60 focus:bg-background focus:border-primary/50"
+                className="w-80 pl-10 bg-white/10 border-blue-600/30 text-white placeholder:text-blue-200 focus:bg-white/20 focus:border-blue-400/50"
               />
             </div>
 
             {/* Notifications */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0">
+                <Button variant="ghost" size="sm" className="relative h-9 w-9 p-0 text-white hover:bg-blue-700/50">
                   <Bell className="h-4 w-4" />
                   {notificationCount > 0 && (
                     <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs bg-red-500 hover:bg-red-600">
@@ -167,22 +167,22 @@ export function ProfessionalHeader({
             </DropdownMenu>
 
             {/* Settings */}
-            <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
+            <Button variant="ghost" size="sm" className="h-9 w-9 p-0 text-white hover:bg-blue-700/50">
               <Settings className="h-4 w-4" />
             </Button>
 
             {/* User Profile */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2 h-9 px-3">
-                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                    <span className="text-white font-medium text-sm">
+                <Button variant="ghost" className="flex items-center space-x-2 h-9 px-3 text-white hover:bg-blue-700/50">
+                  <div className="w-8 h-8 bg-gradient-to-br from-white to-blue-50 rounded-full flex items-center justify-center shadow-md">
+                    <span className="text-blue-800 font-medium text-sm">
                       {(userInfo?.name || '').split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div className="hidden lg:block text-left">
                     <p className="text-sm font-medium leading-none">{userInfo.name}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{userInfo.role}</p>
+                    <p className="text-xs text-blue-200 mt-1">{userInfo.role}</p>
                   </div>
                   <ChevronDown className="h-4 w-4" />
                 </Button>
