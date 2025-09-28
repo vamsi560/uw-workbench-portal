@@ -211,6 +211,9 @@ interface WorkItemGridProps {
 }
 
 export function WorkItemGrid({ workItems, onViewItem, onAssignItem, isLoading = false }: WorkItemGridProps) {
+  // Safety check for undefined workItems
+  const safeWorkItems = workItems || [];
+  
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -232,7 +235,7 @@ export function WorkItemGrid({ workItems, onViewItem, onAssignItem, isLoading = 
     );
   }
 
-  if (!workItems.length) {
+  if (!safeWorkItems.length) {
     return (
       <Card className="p-12 text-center">
         <div className="flex flex-col items-center space-y-4">
@@ -250,7 +253,7 @@ export function WorkItemGrid({ workItems, onViewItem, onAssignItem, isLoading = 
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {workItems.map((workItem) => (
+      {safeWorkItems.map((workItem) => (
         <WorkItemCard
           key={workItem.id}
           workItem={workItem}

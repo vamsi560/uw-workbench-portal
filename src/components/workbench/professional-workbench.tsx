@@ -49,8 +49,8 @@ export function ProfessionalWorkbench() {
   const { toast } = useToast();
   
   // State management
-  const [submissions, setSubmissions] = React.useState<Submission[]>(defaultSubmissions);
-  const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
+  const [submissions, setSubmissions] = React.useState<Submission[]>(defaultSubmissions || []);
+  const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems || []);
   const [selectedSubmission, setSelectedSubmission] = React.useState<Submission | null>(null);
   const [selectedWorkItem, setSelectedWorkItem] = React.useState<WorkItem | null>(null);
   const [activeTab, setActiveTab] = React.useState("Dashboard");
@@ -102,7 +102,7 @@ export function ProfessionalWorkbench() {
 
   // Handle new work items from polling
   React.useEffect(() => {
-    if (newWorkItems.length > 0) {
+    if (newWorkItems && newWorkItems.length > 0) {
       newWorkItems.forEach(newItem => {
         addNewWorkItem(newItem);
         
@@ -360,7 +360,7 @@ export function ProfessionalWorkbench() {
               {/* Content based on view mode */}
               {viewMode === 'grid' ? (
                 <WorkItemGrid 
-                  workItems={workItems}
+                  workItems={workItems || []}
                   onViewItem={handleViewWorkItem}
                   onAssignItem={(item) => console.log('Assign:', item)}
                   isLoading={isRefreshing}
@@ -368,7 +368,7 @@ export function ProfessionalWorkbench() {
               ) : (
                 <DataTable
                   columns={workItemColumns}
-                  data={workItems}
+                  data={workItems || []}
                   rowSelection={rowSelection}
                   setRowSelection={setRowSelection}
                   setTable={() => {}}
@@ -389,7 +389,7 @@ export function ProfessionalWorkbench() {
             <div className="fade-in">
               <DataTable
                 columns={submissionColumns}
-                data={submissions}
+                data={submissions || []}
                 rowSelection={rowSelection}
                 setRowSelection={setRowSelection}
                 setTable={() => {}}

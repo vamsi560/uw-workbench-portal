@@ -1,6 +1,7 @@
 import type {Metadata} from 'next';
 import './globals.css';
 import '../components/workbench/professional-theme.css';
+import '../components/workbench/interactive-elements.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
