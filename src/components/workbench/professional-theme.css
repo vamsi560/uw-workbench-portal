@@ -1,0 +1,72 @@
+/* Professional Theme CSS */
+:root {
+  --color-primary-50: #eff6ff;
+  --color-primary-500: #3b82f6;
+  --color-primary-900: #1e3a8a;
+  --color-gray-50: #f9fafb;
+  --color-gray-500: #6b7280;
+  --color-gray-900: #111827;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --background: var(--color-gray-50);
+  --foreground: var(--color-gray-900);
+  --primary: var(--color-primary-500);
+  --primary-foreground: #fff;
+  --card: #fff;
+  --card-foreground: var(--color-gray-900);
+  --muted: var(--color-gray-500);
+  --muted-foreground: var(--color-gray-900);
+  --accent: var(--color-primary-50);
+  --accent-foreground: var(--color-primary-900);
+  --border: var(--color-gray-500);
+  --radius: 0.5rem;
+  --font-sans: 'PT Sans', Arial, sans-serif;
+  --font-mono: 'Geist Mono', monospace;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.card-professional {
+  background: var(--card);
+  color: var(--card-foreground);
+  border-radius: var(--radius);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.08);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.table-professional {
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.04);
+}
+
+.status-badge {
+  border-radius: 999px;
+  padding: 0.25em 0.75em;
+  font-size: 0.85em;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+@media (max-width: 640px) {
+  .card-professional {
+    padding: 1rem;
+  }
+}
