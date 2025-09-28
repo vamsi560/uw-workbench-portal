@@ -92,7 +92,7 @@ export function ProfessionalHeader({
             {/* Breadcrumb Navigation */}
             <Breadcrumb className="hidden md:flex">
               <BreadcrumbList className="text-sm">
-                {breadcrumbItems.map((item, index) => (
+                {(breadcrumbItems || []).map((item, index) => (
                   <React.Fragment key={index}>
                     <BreadcrumbItem>
                       {item.href ? (
@@ -177,7 +177,7 @@ export function ProfessionalHeader({
                 <Button variant="ghost" className="flex items-center space-x-2 h-9 px-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white font-medium text-sm">
-                      {userInfo.name.split(' ').map(n => n[0]).join('')}
+                      {(userInfo?.name || '').split(' ').map(n => n[0]).join('')}
                     </span>
                   </div>
                   <div className="hidden lg:block text-left">
