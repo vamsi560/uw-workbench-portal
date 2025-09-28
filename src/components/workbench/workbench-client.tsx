@@ -25,7 +25,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useWorkItemUpdates } from "@/hooks/use-workitem-updates";
 import { Dashboard } from "./dashboard";
+import { WebSocketTest } from "./websocket-test";
 
 const subjectivitiesData = [
   { id: 'SUBJ-001', submission: 'S345821', type: 'Inspection', status: 'Pending', dueDate: '08/15/2025' },
@@ -37,7 +39,19 @@ const subjectivitiesData = [
 export function WorkbenchClient() {
   const { toast } = useToast();
   const [submissions] = React.useState<Submission[]>(defaultSubmissions);
-  const [workItems] = React.useState<WorkItem[]>(defaultWorkItems);
+  const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
+  
+  // Real-time work item updates
+  const {
+    newWorkItems,
+    addNewWorkItem,
+    acknowledgeNewWorkItem,
+    clearNewWorkItems,
+    websocket,
+  } = useWorkItemUpdates({
+    enableNotifications: true,
+    autoConnect: true,
+  });
   const [rowSelection, setRowSelection] = React.useState({});
   const [isSheetOpen, setIsSheetOpen] = React.useState(false);
   const [selectedSubmission, setSelectedSubmission] = React.useState<Submission | null>(null);
@@ -46,6 +60,31 @@ export function WorkbenchClient() {
   const [summary, setSummary] = React.useState<string>('');
   const [isSummarizing, setIsSummarizing] = React.useState<boolean>(false);
   const [isSummaryDialogOpen, setIsSummaryDialogOpen] = React.useState<boolean>(false);
+
+  // Handle new work items from WebSocket
+  React.useEffect(() => {
+    if (newWorkItems.length > 0) {
+      // Add new work items to the main work items list
+      newWorkItems.forEach(newItem => {
+        addNewWorkItem(newItem);
+        // Convert and add to workItems state
+        const workItem: WorkItem = {
+          id: newItem.id,
+          owner: newItem.owner || 'System',
+          type: newItem.type || 'New Submission',
+          priority: newItem.priority || 'Medium',
+          gwpcStatus: newItem.gwpcStatus || 'Pending',
+          status: newItem.status,
+          indicated: newItem.indicated || false,
+          automationStatus: newItem.automationStatus || 'Not Applicable',
+          exposureStatus: newItem.exposureStatus || 'New',
+          submissionId: newItem.submission_ref,
+        };
+        setWorkItems(prev => [workItem, ...prev]);
+        acknowledgeNewWorkItem(newItem.id);
+      });
+    }
+  }, [newWorkItems, addNewWorkItem, acknowledgeNewWorkItem]);
 
   
   let tableRef: TanstackTable<Submission> | null = null;
@@ -193,6 +232,9 @@ export function WorkbenchClient() {
         )}
         {activeTab === 'Dashboard' && (
           <Dashboard />
+        )}
+        {activeTab === 'WebSocket Test' && (
+          <WebSocketTest />
         )}
         <AddTaskSheet isOpen={isSheetOpen} onOpenChange={setIsSheetOpen} />
          <AlertDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>

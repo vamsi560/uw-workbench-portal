@@ -1,4 +1,12 @@
-export function WorkbenchHeader() {
+import { Badge } from "@/components/ui/badge";
+import { Wifi, WifiOff } from "lucide-react";
+
+interface WorkbenchHeaderProps {
+  isConnected?: boolean;
+  isConnecting?: boolean;
+}
+
+export function WorkbenchHeader({ isConnected = false, isConnecting = false }: WorkbenchHeaderProps) {
   const navItems = [{ name: "UW Workbench", active: true }];
 
   return (
@@ -26,6 +34,29 @@ export function WorkbenchHeader() {
                 ))}
               </nav>
             </div>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Badge 
+              variant={isConnected ? "default" : isConnecting ? "secondary" : "destructive"}
+              className="flex items-center space-x-1"
+            >
+              {isConnected ? (
+                <>
+                  <Wifi className="h-3 w-3" />
+                  <span>Live</span>
+                </>
+              ) : isConnecting ? (
+                <>
+                  <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  <span>Connecting</span>
+                </>
+              ) : (
+                <>
+                  <WifiOff className="h-3 w-3" />
+                  <span>Offline</span>
+                </>
+              )}
+            </Badge>
           </div>
         </div>
       </div>

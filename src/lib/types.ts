@@ -37,3 +37,41 @@ export type WorkItem = {
   exposureStatus: string;
   submissionId: string;
 };
+
+// WebSocket event types for real-time updates
+export interface WebSocketEvent {
+  event: string;
+  data: any;
+}
+
+export interface NewWorkItemEvent {
+  event: 'new_workitem';
+  data: {
+    id: number;
+    submission_id: number;
+    submission_ref: string;
+    subject: string;
+    from_email: string | null;
+    created_at: string;
+    status: string;
+    extracted_fields?: Record<string, any>;
+  };
+}
+
+export interface WorkItemUpdate {
+  id: string;
+  submission_id: number;
+  submission_ref: string;
+  subject: string;
+  from_email: string | null;
+  created_at: string;
+  status: string;
+  extracted_fields?: Record<string, any>;
+  owner?: string;
+  type?: string;
+  priority?: 'High' | 'Medium' | 'Low';
+  gwpcStatus?: string;
+  indicated?: boolean;
+  automationStatus?: string;
+  exposureStatus?: string;
+}
