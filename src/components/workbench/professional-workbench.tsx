@@ -60,24 +60,24 @@ export function ProfessionalWorkbench() {
 
   // Work item filtering and updates
   const {
-    filters,
-    updateFilter,
-    resetFilters,
-    hasActiveFilters,
-    getApiFilters,
-  } = useWorkItemFilters();
+    filters = {},
+    updateFilter = () => {},
+    resetFilters = () => {},
+    hasActiveFilters = false,
+    getApiFilters = () => ({}),
+  } = useWorkItemFilters() || {};
 
   const {
-    newWorkItems,
+    newWorkItems = [],
     addNewWorkItem,
     acknowledgeNewWorkItem,
     clearNewWorkItems,
-    connected,
+    connected = false,
     error,
   } = useWorkItemUpdates({
     enableNotifications: true,
     filters: getApiFilters(),
-  });
+  }) || {};
 
   // Refresh functionality
   const handleRefresh = React.useCallback(async () => {

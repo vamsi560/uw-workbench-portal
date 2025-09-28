@@ -11,7 +11,9 @@ import {
   Shield, 
   Users, 
   FileText,
-  AlertTriangle,
+  AlertT      {/* Key Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {(metrics || []).map((metric, index) => (ngle,
   CheckCircle,
   DollarSign,
   BarChart3
@@ -89,7 +91,8 @@ interface StatusDistributionProps {
 }
 
 function StatusDistribution({ data }: StatusDistributionProps) {
-  const total = data.reduce((sum, item) => sum + item.count, 0);
+  const safeData = data || [];
+  const total = safeData.reduce((sum, item) => sum + item.count, 0);
   
   return (
     <Card>
@@ -100,7 +103,7 @@ function StatusDistribution({ data }: StatusDistributionProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {data.map((item, index) => (
+        {safeData.map((item, index) => (
           <div key={index} className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center space-x-2">
@@ -137,6 +140,7 @@ interface RecentActivityProps {
 }
 
 function RecentActivity({ activities }: RecentActivityProps) {
+  const safeActivities = activities || [];
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'submission':
@@ -162,7 +166,7 @@ function RecentActivity({ activities }: RecentActivityProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {activities.map((activity) => (
+                    {safeActivities.map((activity) => (
             <div key={activity.id} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
               <div className="flex-shrink-0 mt-0.5">
                 {getActivityIcon(activity.type)}
@@ -202,6 +206,7 @@ interface RiskAnalysisProps {
 }
 
 function RiskAnalysis({ riskDistribution }: RiskAnalysisProps) {
+  const safeRiskDistribution = riskDistribution || [];
   return (
     <Card>
       <CardHeader>
@@ -211,7 +216,7 @@ function RiskAnalysis({ riskDistribution }: RiskAnalysisProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {riskDistribution.map((risk, index) => (
+        {safeRiskDistribution.map((risk, index) => (
           <div key={index} className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">{risk.category}</span>
@@ -249,7 +254,7 @@ function RiskAnalysis({ riskDistribution }: RiskAnalysisProps) {
 
 export function ProfessionalDashboard() {
   // Mock data - replace with real data from your API
-  const metrics = [
+  const metrics = React.useMemo(() => [
     {
       title: "Total Submissions",
       value: "2,847",
@@ -278,17 +283,17 @@ export function ProfessionalDashboard() {
       icon: <DollarSign className="h-4 w-4" />,
       color: 'green' as const
     }
-  ];
+  ], []);
 
-  const statusData = [
+  const statusData = React.useMemo(() => [
     { status: 'New', count: 156, color: 'bg-blue-500' },
     { status: 'In Review', count: 89, color: 'bg-yellow-500' },
     { status: 'Approved', count: 234, color: 'bg-green-500' },
     { status: 'Rejected', count: 23, color: 'bg-red-500' },
     { status: 'Pending Info', count: 67, color: 'bg-orange-500' }
-  ];
+  ], []);
 
-  const recentActivities = [
+  const recentActivities = React.useMemo(() => [
     {
       id: '1',
       type: 'submission' as const,
@@ -321,20 +326,20 @@ export function ProfessionalDashboard() {
       timestamp: '2 hours ago',
       user: 'System'
     }
-  ];
+  ], []);
 
-  const riskData = [
+  const riskData = React.useMemo(() => [
     { category: 'Technical Risk', score: 73, trend: 'stable' as const },
     { category: 'Operational Risk', score: 68, trend: 'improving' as const },
     { category: 'Financial Risk', score: 81, trend: 'concerning' as const },
     { category: 'Compliance Risk', score: 45, trend: 'improving' as const }
-  ];
+  ], []);
 
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {metrics.map((metric, index) => (
+        {(metrics || []).map((metric, index) => (
           <MetricCard key={index} {...metric} />
         ))}
       </div>
