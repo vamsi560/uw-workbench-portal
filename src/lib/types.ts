@@ -37,6 +37,12 @@ export type WorkItem = {
   exposureStatus: string;
   submissionId: string;
   extractedFields?: Record<string, any>;
+  riskScore?: number; // 0-100 cyber risk score
+  riskCategories?: {
+    name: string;
+    score: number;
+    weight: number;
+  }[];
 };
 
 // WebSocket event types for real-time updates

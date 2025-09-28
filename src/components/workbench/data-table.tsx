@@ -39,6 +39,7 @@ interface DataTableProps<TData, TValue> {
   setRowSelection: React.Dispatch<React.SetStateAction<RowSelectionState>>;
   setTable: (table: TanstackTable<TData>) => void;
   onSummarize: (selectedRows: Row<TData>[]) => void;
+  isWorkItems?: boolean;
 }
 
 function Filter({
@@ -67,6 +68,7 @@ export function DataTable<TData, TValue>({
   setRowSelection,
   setTable,
   onSummarize,
+  isWorkItems = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
@@ -97,7 +99,7 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-       <DataTableToolbar table={table} onSummarize={onSummarize} />
+       <DataTableToolbar table={table} onSummarize={onSummarize} isWorkItems={isWorkItems} />
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-muted">

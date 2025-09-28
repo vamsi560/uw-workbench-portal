@@ -21,6 +21,10 @@ import {
     SelectTrigger,
     SelectValue,
   } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RiskScore, RiskBreakdown } from "./risk-score";
+import { CommentsSystem, Comment } from "./comments-system";
+import { WorkItemAssignment, Underwriter } from "./work-item-assignment";
 
 interface WorkItemDetailsProps {
   workItem: WorkItem;
@@ -63,15 +67,71 @@ export function WorkItemDetails({
 }: WorkItemDetailsProps) {
   const [activeTab, setActiveTab] = React.useState("Submission");
   const [isSaved, setIsSaved] = React.useState(false);
+  const [comments, setComments] = React.useState<Comment[]>([]);
   
   // Get extracted fields if this work item came from polling
   const extractedFields = workItem.extractedFields || {};
+
+  // Mock data for cyber risk assessment
+  const riskScore = workItem.riskScore || 75;
+  const riskCategories = workItem.riskCategories || [
+    { name: "Data Exposure", score: 80, weight: 30 },
+    { name: "System Vulnerabilities", score: 65, weight: 25 },
+    { name: "Industry Risk", score: 85, weight: 20 },
+    { name: "Compliance Status", score: 70, weight: 15 },
+    { name: "Incident History", score: 60, weight: 10 }
+  ];
+
+  // Mock underwriters data
+  const underwriters: Underwriter[] = [
+    {
+      id: "1",
+      name: "Sarah Johnson",
+      email: "sarah.j@company.com",
+      specialization: ["Cyber", "Technology"],
+      workload: 65,
+      status: "available"
+    },
+    {
+      id: "2", 
+      name: "Mike Chen",
+      email: "mike.c@company.com",
+      specialization: ["Cyber", "Healthcare"],
+      workload: 85,
+      status: "busy"
+    },
+    {
+      id: "3",
+      name: "Lisa Rodriguez",
+      email: "lisa.r@company.com", 
+      specialization: ["Liability", "Property"],
+      workload: 45,
+      status: "available"
+    }
+  ];
 
   const handleSave = () => {
     if (onSave) {
       onSave(workItem, submission);
       setIsSaved(true);
     }
+  };
+
+  const handleAddComment = (content: string, mentions?: string[]) => {
+    const newComment: Comment = {
+      id: Date.now().toString(),
+      author: "Current User",
+      content,
+      timestamp: new Date().toISOString(),
+      mentions,
+      priority: content.includes('[URGENT]') ? 'urgent' : 'normal'
+    };
+    setComments(prev => [newComment, ...prev]);
+  };
+
+  const handleAssignWorkItem = (underwriterId: string) => {
+    // In real app, this would call an API
+    console.log(`Assigning work item ${workItem.id} to underwriter ${underwriterId}`);
   };
 
   return (
@@ -124,10 +184,22 @@ export function WorkItemDetails({
         <div className="flex-1 p-6">
           <div className="flex justify-between items-start">
             <div>
-              <h2 className="text-2xl font-bold mb-2">Work Item #{workItem.id}</h2>
+              <div className="flex items-center gap-4 mb-2">
+                <h2 className="text-2xl font-bold">Work Item #{workItem.id}</h2>
+                <RiskScore score={riskScore} size="md" />
+              </div>
               <p className="text-muted-foreground">Owner: {workItem.owner}</p>
             </div>
-            <Button variant="outline">Reassign</Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleSave}
+                disabled={isSaved}
+              >
+                {isSaved ? 'Saved ✓' : 'Save'}
+              </Button>
+              <Button variant="outline">Reassign</Button>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-6">
@@ -199,72 +271,84 @@ export function WorkItemDetails({
             </div>
           )}
 
-          {/* Tabs */}
+          {/* Enhanced Tabs */}
           <div className="mt-8">
-            <div className="flex border-b">
-              <button
-                className={`px-4 py-2 text-sm font-medium ${
-                  activeTab === "Submission"
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-muted-foreground"
-                }`}
-                onClick={() => setActiveTab("Submission")}
-              >
-                Submission
-              </button>
-              <button
-                className={`px-4 py-2 text-sm font-medium ${
-                  activeTab === "History"
-                    ? "border-b-2 border-primary text-primary"
-                    : "text-muted-foreground"
-                }`}
-                onClick={() => setActiveTab("History")}
-              >
-                History
-              </button>
-            </div>
-            
-            {activeTab === 'Submission' && (
-                <div className="bg-muted/50 p-4 mt-4 rounded-md border">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-bold">{submission.id} | {submission.insuredName}</h3>
-                        <Button variant="ghost"><Plus className="h-4 w-4 mr-2" />Action</Button>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <p className="text-muted-foreground">Insured Name</p>
-                            <p>{submission.insuredName}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground">Country</p>
-                            <p>United States</p>
-                        </div>
-                         <div>
-                            <p className="text-muted-foreground">Effective Date</p>
-                            <p>{submission.effectiveDate}</p>
-                        </div>
-                        <div></div>
-                         <div>
-                            <p className="text-muted-foreground">Account #</p>
-                            <p>A111288</p>
-                        </div>
-                         <div>
-                            <p className="text-muted-foreground">Address</p>
-                            <p>123 Davidson Ave, Somerset, New Jersey, United States, 08854</p>
-                        </div>
-                         <div>
-                            <p className="text-muted-foreground">Expiration Date</p>
-                            <p>{submission.expiryDate}</p>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <Tabs defaultValue="submission" className="w-full">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="submission">Submission</TabsTrigger>
+                <TabsTrigger value="risk">Risk Assessment</TabsTrigger>
+                <TabsTrigger value="comments">Comments</TabsTrigger>
+                <TabsTrigger value="assignment">Assignment</TabsTrigger>
+                <TabsTrigger value="history">History</TabsTrigger>
+              </TabsList>
 
-            {activeTab === 'History' && (
-                <div className="pt-4 text-center text-muted-foreground">
-                    History details would be displayed here.
+              <TabsContent value="submission" className="mt-4">
+                <div className="bg-muted/50 p-4 rounded-md border">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-bold">{submission.id} | {submission.insuredName}</h3>
+                    <Button variant="ghost"><Plus className="h-4 w-4 mr-2" />Action</Button>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Insured Name</p>
+                      <p>{submission.insuredName}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Country</p>
+                      <p>United States</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Effective Date</p>
+                      <p>{submission.effectiveDate}</p>
+                    </div>
+                    <div></div>
+                    <div>
+                      <p className="text-muted-foreground">Account #</p>
+                      <p>A111288</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Address</p>
+                      <p>123 Davidson Ave, Somerset, New Jersey, United States, 08854</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Expiration Date</p>
+                      <p>{submission.expiryDate}</p>
+                    </div>
+                  </div>
                 </div>
-            )}
+              </TabsContent>
+
+              <TabsContent value="risk" className="mt-4">
+                <RiskBreakdown 
+                  overallScore={riskScore}
+                  categories={riskCategories}
+                />
+              </TabsContent>
+
+              <TabsContent value="comments" className="mt-4">
+                <CommentsSystem 
+                  workItemId={workItem.id}
+                  comments={comments}
+                  onAddComment={handleAddComment}
+                />
+              </TabsContent>
+
+              <TabsContent value="assignment" className="mt-4">
+                <WorkItemAssignment
+                  currentAssignee={workItem.owner !== 'System Generated' ? workItem.owner : undefined}
+                  workItemType={workItem.type}
+                  priority={workItem.priority}
+                  onAssign={handleAssignWorkItem}
+                  underwriters={underwriters}
+                />
+              </TabsContent>
+
+              <TabsContent value="history" className="mt-4">
+                <div className="pt-4 text-center text-muted-foreground">
+                  History details would be displayed here.
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
           <div className="flex justify-end gap-2 mt-8">
             <Button 

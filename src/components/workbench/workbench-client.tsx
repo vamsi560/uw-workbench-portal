@@ -301,6 +301,7 @@ export function WorkbenchClient() {
             setRowSelection={setRowSelection}
             setTable={(t) => (workItemTableRef = t)}
             onSummarize={handleSummarize}
+            isWorkItems={true}
           />
         )}
         {activeTab === 'All Submissions' && (
