@@ -3,7 +3,8 @@
 import { useState, useCallback } from 'react';
 import { WorkItem, NewWorkItemEvent, WorkItemUpdate } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
-import { useSse } from './use-sse';
+import { usePolling } from './use-polling';
+import { config } from '@/lib/config';
 
 export interface UseWorkItemUpdatesOptions {
   enableNotifications?: boolean;
@@ -49,14 +50,28 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     }
   }, [enableNotifications, toast]);
 
-  // SSE primary transport
-  const handleSseMessage = useCallback((msg: any) => {
-    if (msg?.event === 'new_workitem') {
-      handleNewWorkItem(msg as NewWorkItemEvent);
-    }
+  // Polling primary transport
+  const handleNewItems = useCallback((items: any[]) => {
+    items.forEach((item) => {
+      // Convert polling response to our expected format
+      const event: NewWorkItemEvent = {
+        event: 'new_workitem',
+        data: {
+          id: item.id || item.submission_id,
+          submission_id: item.submission_id,
+          submission_ref: item.submission_ref,
+          subject: item.subject,
+          from_email: item.from_email,
+          created_at: item.created_at,
+          status: item.status,
+          extracted_fields: item.extracted_fields || {},
+        }
+      };
+      handleNewWorkItem(event);
+    });
   }, [handleNewWorkItem]);
 
-  const { connected: sseConnected } = useSse(handleSseMessage);
+  const { isPolling, error } = usePolling(handleNewItems, config.polling.intervalMs);
 
   // Add new work item to the main work items list
   const addNewWorkItem = useCallback((workItem: WorkItemUpdate) => {
@@ -92,6 +107,7 @@ export function useWorkItemUpdates(options: UseWorkItemUpdatesOptions = {}) {
     addNewWorkItem,
     acknowledgeNewWorkItem,
     clearNewWorkItems,
-    connected: sseConnected,
+    connected: isPolling,
+    error,
   };
 }

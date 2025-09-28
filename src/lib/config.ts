@@ -6,16 +6,20 @@ export const config = {
   // HARD-CODED URLs (switch to env later)
   sseUrl: 'https://uw-workbench-jade.vercel.app/sse/workitems',
   apiUrl: 'https://uw-workbench-jade.vercel.app',
+  pollUrl: 'https://uw-workbench-jade.vercel.app/api/workitems/poll',
   
-  // Realtime connection settings (SSE only)
+  // Realtime connection settings
   realtime: {
     reconnectIntervalMs: 3000,
     maxReconnectAttempts: 5,
     autoConnect: true,
   },
   
-  // Development settings
-  isDevelopment: process.env.NODE_ENV === 'development',
+  // Polling settings
+  polling: {
+    intervalMs: 5000, // Poll every 5 seconds
+    maxRetries: 3,
+  },
 };
 
 // Helper function to get WebSocket URL based on environment
@@ -27,4 +31,9 @@ export function getSseUrl(): string {
 // Helper function to get API URL
 export function getApiUrl(): string {
   return config.apiUrl;
+}
+
+// Helper function to get Polling URL
+export function getPollUrl(): string {
+  return config.pollUrl;
 }

@@ -42,12 +42,14 @@ export function WorkbenchClient() {
   const [submissions] = React.useState<Submission[]>(defaultSubmissions);
   const [workItems, setWorkItems] = React.useState<WorkItem[]>(defaultWorkItems);
   
-  // Real-time work item updates (SSE)
+  // Real-time work item updates (Polling)
   const {
     newWorkItems,
     addNewWorkItem,
     acknowledgeNewWorkItem,
     clearNewWorkItems,
+    connected,
+    error,
   } = useWorkItemUpdates({
     enableNotifications: true,
   });
@@ -164,6 +166,23 @@ export function WorkbenchClient() {
 
   return (
       <main>
+        {/* Polling Status Bar */}
+        <div className="bg-muted/30 border-b px-6 py-2 text-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <span className={`flex items-center gap-2 ${connected ? 'text-green-600' : 'text-red-600'}`}>
+                <div className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                Polling: {connected ? 'Active' : 'Inactive'}
+              </span>
+              {error && (
+                <span className="text-orange-600">Error: {error}</span>
+              )}
+            </div>
+            <span className="text-muted-foreground">
+              Work Items: {workItems.length} | New Items: {newWorkItems.length}
+            </span>
+          </div>
+        </div>
         <WorkbenchTabs onTasksClick={() => setIsSheetOpen(true)} activeTab={activeTab} setActiveTab={setActiveTab} />
         {activeTab === 'My Submissions' && (
           <DataTable
