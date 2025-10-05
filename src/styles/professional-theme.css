@@ -1,3 +1,18 @@
+/* Gradient card with angled corners for work items */
+.card-gradient {
+  background: var(--primary-gradient);
+  color: var(--text-inverse);
+  border-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
+  box-shadow: var(--shadow-md);
+  border: none;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow var(--duration-normal) var(--ease-out), transform var(--duration-normal) var(--ease-out);
+}
+.card-gradient:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-2px) scale(1.01);
+}
 /* Professional Cyber Insurance Portal Theme */
 
 /* Color Palette - Professional Blue Theme (Matching Reference) */
@@ -13,6 +28,8 @@
   --primary-700: #0369a1;
   --primary-800: #075985;
   --primary-900: #0c4a6e;
+  /* Gradient for primary */
+  --primary-gradient: linear-gradient(135deg, #0099A8 0%, #00B4D8 50%, #48CAE4 100%);
 
   /* Secondary Blue Tones */
   --secondary-50: #f8fafc;
@@ -167,8 +184,9 @@ body {
 }
 
 /* Professional button styles */
+/* Gradient button style */
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-700) 100%);
+  background: var(--primary-gradient);
   border: 1px solid var(--primary-600);
   color: var(--text-inverse);
   font-weight: 500;
@@ -176,7 +194,7 @@ body {
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-700) 0%, var(--primary-800) 100%);
+  background: linear-gradient(135deg, #0369a1 0%, #0099A8 100%);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }

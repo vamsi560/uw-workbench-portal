@@ -179,25 +179,29 @@ export function WorkItemDetails({
 
   return (
     <div className="bg-background">
-      {/* Header */}
-      <div className="flex justify-between items-center p-4 border-b">
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={onBack}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div className="text-sm text-muted-foreground flex items-center gap-2">
-            <span>Back</span>
-            <span className="text-primary">| Work Item #{workItem.id} | {submission.id} | {submission.insuredName}</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline">
-            Guidewire <ExternalLink className="h-4 w-4 ml-2" />
-          </Button>
-          <Button variant="outline">
-            ImageRight <ExternalLink className="h-4 w-4 ml-2" />
-          </Button>
-        </div>
+      {/* Gradient Card Header */}
+      <div className="mb-6">
+        <Card variant="gradient" className="p-0">
+          <CardContent className="p-4 flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" onClick={onBack}>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <div className="text-sm text-white flex items-center gap-2">
+                <span>Back</span>
+                <span className="font-bold">| Work Item #{workItem.id} | {submission.id} | {submission.insuredName}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 mt-2 md:mt-0">
+              <Button variant="outline">
+                Guidewire <ExternalLink className="h-4 w-4 ml-2" />
+              </Button>
+              <Button variant="outline">
+                ImageRight <ExternalLink className="h-4 w-4 ml-2" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Main Content */}

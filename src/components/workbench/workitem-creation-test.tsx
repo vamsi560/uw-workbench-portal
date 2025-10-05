@@ -23,7 +23,15 @@ export function WorkItemCreationTest() {
   const [testWorkItems, setTestWorkItems] = useState<any[]>([]);
 
   // Simulate creating a test work item
-  const createTestWorkItem = () => {
+          <div className="flex items-center space-x-4">
+            <Card variant="gradient">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Wifi className="h-5 w-5" />
+                  <span>Work Item Creation Test</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
     const testWorkItem = {
       id: `W${Date.now()}`,
       submission_id: Math.floor(Math.random() * 1000),
@@ -33,12 +41,12 @@ export function WorkItemCreationTest() {
       created_at: new Date().toISOString(),
       status: 'pending',
       extracted_fields: {
-        policy_type: 'Cyber Insurance',
-        coverage_amount: '$1,000,000',
-        company_name: 'Test Company Inc.',
-        broker_name: 'John Doe'
-      }
-    };
+            {newWorkItems.map((item, idx) => (
+              <div key={idx} className="p-2 bg-white/10 rounded-lg">
+                <div className="font-semibold">{item.subject}</div>
+                <div className="text-xs text-white/80">ID: {item.id}</div>
+              </div>
+            ))}
 
     // Simulate SSE message
     const sseMessage = {
@@ -126,50 +134,50 @@ export function WorkItemCreationTest() {
       </Card>
 
       {newWorkItems.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>New Work Items ({newWorkItems.length})</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={clearNewWorkItems}
-              >
-                Clear
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {newWorkItems.map((item, index) => (
-                <div key={index} className="p-3 border rounded-lg bg-blue-50">
-                  <div className="font-medium">{item.subject}</div>
-                  <div className="text-sm text-gray-600">
-                    From: {item.from_email || 'Unknown'} | 
-                    Status: {item.status} | 
-                    Created: {new Date(item.created_at).toLocaleString()}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    ID: {item.id} | Submission ID: {item.submission_id} | Ref: {item.submission_ref}
-                  </div>
-                  {item.extracted_fields && Object.keys(item.extracted_fields).length > 0 && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Extracted Fields: {Object.keys(item.extracted_fields).length} fields
+          <Card variant="gradient">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>New Work Items ({newWorkItems.length})</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearNewWorkItems}
+                >
+                  Clear
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {newWorkItems.map((item, index) => (
+                  <div key={index} className="p-3 border rounded-lg bg-blue-50">
+                    <div className="font-medium">{item.subject}</div>
+                    <div className="text-sm text-gray-600">
+                      From: {item.from_email || 'Unknown'} | 
+                      Status: {item.status} | 
+                      Created: {new Date(item.created_at).toLocaleString()}
                     </div>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="mt-2"
-                    onClick={() => acknowledgeNewWorkItem(item.id)}
-                  >
-                    Acknowledge
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                    <div className="text-xs text-gray-500 mt-1">
+                      ID: {item.id} | Submission ID: {item.submission_id} | Ref: {item.submission_ref}
+                    </div>
+                    {item.extracted_fields && Object.keys(item.extracted_fields).length > 0 && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Extracted Fields: {Object.keys(item.extracted_fields).length} fields
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => acknowledgeNewWorkItem(item.id)}
+                    >
+                      Acknowledge
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
       )}
 
       {testWorkItems.length > 0 && (
