@@ -14,6 +14,7 @@ interface InlineEditProps {
   options?: { value: string; label: string }[];
   placeholder?: string;
   className?: string;
+  error?: string;
 }
 
 export function InlineEdit({
@@ -23,6 +24,7 @@ export function InlineEdit({
   options = [],
   placeholder,
   className = "",
+  error,
 }: InlineEditProps) {
   const [isEditing, setIsEditing] = React.useState(false);
   const [editValue, setEditValue] = React.useState(String(value || ""));
@@ -63,60 +65,65 @@ export function InlineEdit({
   }
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      <div className="flex-1">
-        {type === "select" ? (
-          <Select value={editValue} onValueChange={setEditValue}>
-            <SelectTrigger className="h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {options.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : type === "textarea" ? (
-          <Textarea
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="min-h-[60px] resize-none"
-            autoFocus
-          />
-        ) : (
-          <Input
-            type={type}
-            value={editValue}
-            onChange={(e) => setEditValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            className="h-8"
-            autoFocus
-          />
-        )}
+    <div className={`flex flex-col gap-1 ${className}`}>
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          {type === "select" ? (
+            <Select value={editValue} onValueChange={setEditValue}>
+              <SelectTrigger className="h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {options.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : type === "textarea" ? (
+            <Textarea
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className="min-h-[60px] resize-none"
+              autoFocus
+            />
+          ) : (
+            <Input
+              type={type}
+              value={editValue}
+              onChange={(e) => setEditValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder={placeholder}
+              className="h-8"
+              autoFocus
+            />
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSave}
+            className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
+          >
+            <Check className="h-3 w-3" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleCancel}
+            className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
       </div>
-      <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleSave}
-          className="h-6 w-6 p-0 text-green-600 hover:text-green-700"
-        >
-          <Check className="h-3 w-3" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCancel}
-          className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
-        >
-          <X className="h-3 w-3" />
-        </Button>
-      </div>
+      {error && (
+        <div className="form-error text-sm text-red-600 mt-1">{error}</div>
+      )}
     </div>
   );
 }

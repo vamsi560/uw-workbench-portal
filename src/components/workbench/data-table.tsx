@@ -32,6 +32,7 @@ import { Submission } from "@/lib/types";
 import { WorkItemFilters } from "@/hooks/use-workitem-filters";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -114,44 +115,52 @@ export function DataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-       <DataTableToolbar 
-         table={table} 
-         onSummarize={onSummarize} 
-         isWorkItems={isWorkItems}
-         filters={filters}
-         onFilterChange={onFilterChange}
-         onResetFilters={onResetFilters}
-         hasActiveFilters={hasActiveFilters}
-         onRefresh={onRefresh}
-         isRefreshing={isRefreshing}
-       />
+      <DataTableToolbar 
+        table={table} 
+        onSummarize={onSummarize} 
+        isWorkItems={isWorkItems}
+        filters={filters}
+        onFilterChange={onFilterChange}
+        onResetFilters={onResetFilters}
+        hasActiveFilters={hasActiveFilters}
+        onRefresh={onRefresh}
+        isRefreshing={isRefreshing}
+      />
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-muted">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id} className="p-2">
-                       <div className="flex flex-col gap-1">
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id} className="p-2">
+                    <div className="flex flex-col gap-1">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
                             header.getContext()
                           )}
-                           {header.column.getCanFilter() ? (
-                            <Filter header={header as any} />
-                          ) : null}
-                      </div>
-                    </TableHead>
-                  );
-                })}
+                      {header.column.getCanFilter() ? (
+                        <Filter header={header as any} />
+                      ) : null}
+                    </div>
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isRefreshing ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <TableRow key={i}>
+                  {table.getAllColumns().map((col, j) => (
+                    <TableCell key={j} className="p-2">
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
                 const isSelected = row.getIsSelected();
                 return (
