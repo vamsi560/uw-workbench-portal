@@ -1,5 +1,6 @@
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWorkitems } from "@/hooks/use-workitems";
 
 export function WorkItemsList() {
   const { workItems, loading } = useWorkitems(60000); // 60s polling
