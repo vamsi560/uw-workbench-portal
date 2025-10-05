@@ -125,7 +125,6 @@
 }
 
 /* Input Enhancements */
-
 .input-professional {
   display: block;
   width: 100%;
@@ -137,16 +136,12 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   transition: all 0.2s ease-in-out;
-  outline: none;
 }
 
-.input-professional:focus, .input-professional:focus-visible,
-select:focus, select:focus-visible,
-textarea:focus, textarea:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 2px;
+.input-professional:focus {
+  outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .input-professional::placeholder {

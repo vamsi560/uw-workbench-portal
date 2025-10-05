@@ -1,7 +1,7 @@
 "use client";
 
-import { WorkItemsList } from "@/components/workbench/work-items-list";
+import { ProfessionalWorkbench } from "@/components/workbench/professional-workbench";
 
 export default function Home() {
-  return <WorkItemsList />;
+  return <ProfessionalWorkbench />;
 }

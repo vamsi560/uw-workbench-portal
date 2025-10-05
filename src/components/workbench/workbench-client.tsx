@@ -117,8 +117,26 @@ export function WorkbenchClient() {
   // Handle new work items from polling
   React.useEffect(() => {
     if (newWorkItems.length > 0) {
-      // Add new work items to the main work items list
+      // Clear static work items when we have real data from backend
+      if (workItems.length === defaultWorkItems.length) {
+        // Only clear if we still have the default static data
+        const hasOnlyStaticData = workItems.every(item => 
+          defaultWorkItems.some(defaultItem => defaultItem.id === item.id)
+        );
+        if (hasOnlyStaticData) {
+          setWorkItems([]); // Clear static data
+        }
+      }
+
+      // Add new work items from backend (only if not already present)
       newWorkItems.forEach(newItem => {
+        // Check if this work item already exists
+        const existingWorkItem = workItems.find(item => item.id === newItem.id);
+        if (existingWorkItem) {
+          acknowledgeNewWorkItem(newItem.id);
+          return; // Skip if already exists
+        }
+
         addNewWorkItem(newItem);
         
         // Create a new submission for this work item if it doesn't exist
@@ -189,7 +207,7 @@ export function WorkbenchClient() {
         acknowledgeNewWorkItem(newItem.id);
       });
     }
-  }, [newWorkItems, addNewWorkItem, acknowledgeNewWorkItem]);
+  }, [newWorkItems, addNewWorkItem, acknowledgeNewWorkItem, workItems, defaultWorkItems, submissions]);
 
   
   let tableRef: TanstackTable<Submission> | null = null;

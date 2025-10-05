@@ -6,15 +6,20 @@ import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
   ExternalLink,
+  ChevronsUpDown,
   Check,
   Circle,
+  MoreHorizontal,
   Plus,
 } from "lucide-react";
-// import { Badge } from "@/components/ui/badge"; // Unused
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
+    SelectValue,
   } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RiskScore, RiskBreakdown } from "./risk-score";
@@ -56,12 +61,13 @@ const SideNavItem = ({ icon, label, status, isActive = false, isSubItem = false,
 );
 
 
+export function WorkItemDetails({
   workItem,
   submission,
   onBack,
   onSave,
-}: Readonly<WorkItemDetailsProps>) {
-  // const [activeTab, setActiveTab] = React.useState("Submission"); // Not used
+}: WorkItemDetailsProps) {
+  const [activeTab, setActiveTab] = React.useState("Submission");
   const [isSaved, setIsSaved] = React.useState(false);
   const [comments, setComments] = React.useState<Comment[]>([]);
   
@@ -233,11 +239,7 @@ const SideNavItem = ({ icon, label, status, isActive = false, isSubItem = false,
                 onClick={handleSave}
                 disabled={isSaved && !hasUnsavedChanges}
               >
-                {hasUnsavedChanges
-                  ? 'Save Changes'
-                  : isSaved
-                  ? 'Saved ✓'
-                  : 'Save'}
+                {hasUnsavedChanges ? 'Save Changes' : (isSaved ? 'Saved ✓' : 'Save')}
               </Button>
               <Button variant="outline">Reassign</Button>
             </div>
@@ -354,86 +356,84 @@ const SideNavItem = ({ icon, label, status, isActive = false, isSubItem = false,
                     <h3 className="font-bold">{submission.id} | {submission.insuredName}</h3>
                     <Button variant="ghost"><Plus className="h-4 w-4 mr-2" />Action</Button>
                   </div>
-                  <div className="form-group bg-muted/50 rounded-md border p-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
+                      <p className="text-muted-foreground">Insured Name</p>
                       <InlineEdit
                         value={editableSubmission.insuredName}
-                        onSave={value => handleSubmissionFieldUpdate('insuredName', value)}
-                        placeholder="Insured Name"
-                        error={!editableSubmission.insuredName ? "Insured Name is required" : undefined}
+                        onSave={(value) => handleSubmissionFieldUpdate('insuredName', value)}
+                        placeholder="Enter insured name"
                       />
                     </div>
                     <div>
-                      <Input
-                        label="Country"
+                      <p className="text-muted-foreground">Country</p>
+                      <InlineEdit
                         value="United States"
-                        onChange={() => {}}
-                        placeholder="Country"
-                        disabled
+                        onSave={(value) => {/* Handle country update */}}
+                        placeholder="Enter country"
                       />
                     </div>
                     <div>
-                      <Input
-                        label="Effective Date"
+                      <p className="text-muted-foreground">Effective Date</p>
+                      <InlineEdit
                         value={editableSubmission.effectiveDate}
-                        onChange={e => handleSubmissionFieldUpdate('effectiveDate', e.target.value)}
-                        placeholder="Effective Date"
+                        onSave={(value) => handleSubmissionFieldUpdate('effectiveDate', value)}
+                        placeholder="Enter effective date"
                       />
                     </div>
                     <div>
-                      <SelectTrigger
-                        label="Underwriter"
+                      <p className="text-muted-foreground">Underwriter</p>
+                      <InlineEdit
                         value={editableSubmission.underwriter}
-                        onValueChange={value => handleSubmissionFieldUpdate('underwriter', value)}
-                      >
-                        <SelectContent>
-                          <SelectItem value="underwriter_john">John Smith</SelectItem>
-                          <SelectItem value="underwriter_jane">Jane Doe</SelectItem>
-                          <SelectItem value="underwriter_alex">Alex Johnson</SelectItem>
-                          <SelectItem value="Auto-Assigned">Auto-Assigned</SelectItem>
-                        </SelectContent>
-                      </SelectTrigger>
+                        onSave={(value) => handleSubmissionFieldUpdate('underwriter', value)}
+                        type="select"
+                        options={[
+                          { value: "underwriter_john", label: "John Smith" },
+                          { value: "underwriter_jane", label: "Jane Doe" },
+                          { value: "underwriter_alex", label: "Alex Johnson" },
+                          { value: "Auto-Assigned", label: "Auto-Assigned" }
+                        ]}
+                      />
                     </div>
                     <div>
-                      <Input
-                        label="Account #"
+                      <p className="text-muted-foreground">Account #</p>
+                      <InlineEdit
                         value="A111288"
-                        onChange={() => {}}
-                        placeholder="Account #"
-                        disabled
+                        onSave={(value) => {/* Handle account update */}}
+                        placeholder="Enter account number"
                       />
                     </div>
                     <div>
-                      <Textarea
-                        label="Address"
+                      <p className="text-muted-foreground">Address</p>
+                      <InlineEdit
                         value="123 Davidson Ave, Somerset, New Jersey, United States, 08854"
-                        onChange={() => {}}
-                        placeholder="Address"
-                        disabled
+                        onSave={(value) => {/* Handle address update */}}
+                        type="textarea"
+                        placeholder="Enter address"
                       />
                     </div>
                     <div>
-                      <Input
-                        label="Expiration Date"
+                      <p className="text-muted-foreground">Expiration Date</p>
+                      <InlineEdit
                         value={editableSubmission.expiryDate}
-                        onChange={e => handleSubmissionFieldUpdate('expiryDate', e.target.value)}
-                        placeholder="Expiration Date"
+                        onSave={(value) => handleSubmissionFieldUpdate('expiryDate', value)}
+                        placeholder="Enter expiration date"
                       />
                     </div>
                     <div>
-                      <SelectTrigger
-                        label="Status"
+                      <p className="text-muted-foreground">Status</p>
+                      <InlineEdit
                         value={editableSubmission.status}
-                        onValueChange={value => handleSubmissionFieldUpdate('status', value)}
-                      >
-                        <SelectContent>
-                          <SelectItem value="New">New</SelectItem>
-                          <SelectItem value="In Review">In Review</SelectItem>
-                          <SelectItem value="Approved">Approved</SelectItem>
-                          <SelectItem value="Rejected">Rejected</SelectItem>
-                          <SelectItem value="Processed">Processed</SelectItem>
-                        </SelectContent>
-                      </SelectTrigger>
+                        onSave={(value) => handleSubmissionFieldUpdate('status', value)}
+                        type="select"
+                        options={[
+                          { value: "New", label: "New" },
+                          { value: "In Review", label: "In Review" },
+                          { value: "Approved", label: "Approved" },
+                          { value: "Rejected", label: "Rejected" },
+                          { value: "Processed", label: "Processed" }
+                        ]}
+                      />
                     </div>
                   </div>
                 </div>
@@ -477,11 +477,7 @@ const SideNavItem = ({ icon, label, status, isActive = false, isSubItem = false,
               onClick={handleSave}
               disabled={isSaved && !hasUnsavedChanges}
             >
-              {hasUnsavedChanges
-                ? 'Save Changes'
-                : isSaved
-                ? 'Saved ✓'
-                : 'Save'}
+              {hasUnsavedChanges ? 'Save Changes' : (isSaved ? 'Saved ✓' : 'Save')}
             </Button>
             <Button>Next</Button>
           </div>
