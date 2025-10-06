@@ -2,34 +2,20 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "default" | "gradient";
-}
-
-const Card = React.forwardRef<HTMLDivElement, CardProps>(({ className, variant = "default", ...props }, ref) => (
+const Card = React.forwardRef<
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
+>(({ className, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
-      variant === "gradient"
-        ? "card-gradient"
-        : "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
       className
     )}
     {...props}
   />
 ))
 Card.displayName = "Card"
-// Gradient card style (angled corners, gradient background)
-// Add this to your global CSS if not present:
-// .card-gradient {
-//   background: var(--primary-gradient);
-//   color: var(--text-inverse);
-//   border-radius: 1.5rem 0.5rem 1.5rem 0.5rem;
-//   box-shadow: var(--shadow-md);
-//   border: none;
-//   position: relative;
-//   overflow: hidden;
-// }
 
 const CardHeader = React.forwardRef<
   HTMLDivElement,

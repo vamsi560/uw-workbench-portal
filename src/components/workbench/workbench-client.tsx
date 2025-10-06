@@ -108,55 +108,37 @@ export function WorkbenchClient() {
     // On component mount, ensure we have fresh data
     // This prevents issues when user refreshes the page
     if (!submissions.length && !workItems.length) {
+      // In a real app, fetch initial data here
       setSubmissions(defaultSubmissions);
-      // Don't set default work items here - let them come from the API via polling
-      // setWorkItems(defaultWorkItems); // REMOVED to prevent duplication
+      setWorkItems(defaultWorkItems);
     }
   }, []);
 
-  // Fetch work items from API on mount to replace static data
-  React.useEffect(() => {
-    const fetchWorkItems = async () => {
-      try {
-        const response = await fetch('/api/workitems?limit=20');
-        if (response.ok) {
-          const apiWorkItems: WorkItem[] = await response.json();
-          // Convert API response to proper WorkItem format and replace static data
-          const formattedWorkItems = apiWorkItems.map(item => ({
-            ...item,
-            // Ensure required fields are present
-            status: item.status || 'Pending',
-            priority: item.priority || 'Medium',
-            owner: item.owner || 'System',
-            type: item.type || 'New Submission',
-            created_at: item.created_at || new Date().toISOString(),
-          }));
-          setWorkItems(formattedWorkItems);
-        }
-      } catch (error) {
-        console.error('Failed to fetch work items:', error);
-        // Fallback to static data only on error
-        setWorkItems(defaultWorkItems);
-      }
-    };
-
-    // Only fetch if we don't have work items yet
-    if (workItems.length === 0) {
-      fetchWorkItems();
-    }
-  }, [workItems.length]);
-
-  // Handle new work items from polling (only add truly new items)
+  // Handle new work items from polling
   React.useEffect(() => {
     if (newWorkItems.length > 0) {
+      // Clear static work items when we have real data from backend
+      if (workItems.length === defaultWorkItems.length) {
+        // Only clear if we still have the default static data
+        const hasOnlyStaticData = workItems.every(item => 
+          defaultWorkItems.some(defaultItem => defaultItem.id === item.id)
+        );
+        if (hasOnlyStaticData) {
+          setWorkItems([]); // Clear static data
+        }
+      }
+
+      // Add new work items from backend (only if not already present)
       newWorkItems.forEach(newItem => {
         // Check if this work item already exists
-        const existingWorkItem = workItems.find(item => String(item.id) === String(newItem.id));
+        const existingWorkItem = workItems.find(item => item.id === newItem.id);
         if (existingWorkItem) {
           acknowledgeNewWorkItem(newItem.id);
           return; // Skip if already exists
         }
 
+        addNewWorkItem(newItem);
+        
         // Create a new submission for this work item if it doesn't exist
         const submissionId = `S${newItem.submission_id}`;
         const existingSubmission = submissions.find(s => s.id === submissionId);
@@ -176,19 +158,25 @@ export function WorkbenchClient() {
             mfaEnforced: 'No',
           };
           
+          // Add new submission to the list (this would normally come from an API)
           setSubmissions(prev => [newSubmission, ...prev]);
         }
         
         // Convert and add to workItems state with enhanced fields
         const workItem: WorkItem = {
+          // Core identifiers
           id: newItem.id,
           submission_id: newItem.submission_id,
           submission_ref: newItem.submission_ref,
+          
+          // Basic work item data
           title: newItem.title || newItem.subject || 'New Work Item',
           description: newItem.description,
           status: newItem.status,
           priority: newItem.priority || 'Medium',
           assigned_to: newItem.assigned_to,
+          
+          // Cyber insurance specific fields
           risk_score: newItem.risk_score,
           risk_categories: newItem.risk_categories,
           industry: newItem.industry,
@@ -196,10 +184,16 @@ export function WorkbenchClient() {
           policy_type: newItem.policy_type,
           coverage_amount: newItem.coverage_amount,
           last_risk_assessment: newItem.last_risk_assessment,
+          
+          // Collaboration data
           comments_count: newItem.comments_count || 0,
           has_urgent_comments: newItem.has_urgent_comments || false,
+          
+          // Timestamps
           created_at: newItem.created_at,
           updated_at: newItem.updated_at,
+          
+          // Legacy fields for backward compatibility
           owner: newItem.owner || 'System',
           type: newItem.type || 'New Submission',
           gwpcStatus: newItem.gwpcStatus || 'Pending',
@@ -209,17 +203,11 @@ export function WorkbenchClient() {
           submissionId: submissionId,
           extractedFields: newItem.extracted_fields,
         };
-        
-        setWorkItems(prev => {
-          // Double-check for duplicates before adding
-          const exists = prev.find(item => String(item.id) === String(workItem.id));
-          if (exists) return prev;
-          return [workItem, ...prev];
-        });
+        setWorkItems(prev => [workItem, ...prev]);
         acknowledgeNewWorkItem(newItem.id);
       });
     }
-  }, [newWorkItems, acknowledgeNewWorkItem, workItems, submissions]);
+  }, [newWorkItems, addNewWorkItem, acknowledgeNewWorkItem, workItems, defaultWorkItems, submissions]);
 
   
   let tableRef: TanstackTable<Submission> | null = null;

@@ -62,11 +62,9 @@
 @layer base {
   * {
     @apply border-border;
-    color: black !important;
   }
   body {
     @apply bg-background text-foreground;
-    color: black !important;
   }
 }
 
