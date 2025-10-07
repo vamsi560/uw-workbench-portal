@@ -35,6 +35,7 @@ import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useWorkQueueData } from '@/hooks/use-work-queue-data'
 import { WorkItemCard } from './work-item-card'
+import { WorkQueueSkeleton } from './work-queue-skeleton'
 
 interface WorkItem {
   id: string

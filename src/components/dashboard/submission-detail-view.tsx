@@ -26,6 +26,7 @@ import { RiskCategoryBreakdown } from './risk-category-breakdown'
 import { AutomatedRecommendations } from './automated-recommendations'
 import { CommunicationHub } from './communication-hub'
 import { useSubmissionDetailData } from '@/hooks/use-submission-detail-data'
+import { SubmissionDetailSkeleton } from './submission-detail-skeleton'
 
 interface SubmissionDetailViewProps {
   workItemId: string

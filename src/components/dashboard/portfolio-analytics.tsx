@@ -36,6 +36,7 @@ import {
   Line
 } from 'recharts'
 import { usePortfolioAnalyticsData } from '@/hooks/use-portfolio-analytics-data'
+import { AnalyticsSkeleton } from './analytics-skeleton'
 
 export function PortfolioAnalytics() {
   const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('month')

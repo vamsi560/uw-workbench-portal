@@ -40,6 +40,7 @@ import {
   Line
 } from 'recharts'
 import { useTeamPerformanceData } from '@/hooks/use-team-performance-data'
+import { TeamPerformanceSkeleton } from './team-performance-skeleton'
 
 export function TeamPerformanceDashboard() {
   const [timeframe, setTimeframe] = useState<'week' | 'month' | 'quarter'>('week')
