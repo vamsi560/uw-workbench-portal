@@ -6,7 +6,9 @@ import { submissions as defaultSubmissions, workItems as defaultWorkItems } from
 import { Submission, WorkItem } from "@/lib/types";
 import { DataTable } from "@/components/workbench/data-table";
 import { getColumns, getWorkItemColumns } from "@/components/workbench/columns";
-import { WorkbenchTabs } from "@/components/workbench/workbench-tabs";
+import { WorkbenchTabs } from "@/components/workbench/w            <AlertDialogTitle>
+              {isSummarizing ? "Generating Summary..." : "Submission Summary"}
+            </AlertDialogTitle>bench-tabs";
 import { AddTaskSheet } from "@/components/workbench/add-task-sheet";
 import { SubmissionDetails } from "@/components/workbench/submission-details";
 import { WorkItemDetails } from "@/components/workbench/work-item-details";
@@ -14,7 +16,7 @@ import { PortfolioManagement } from "@/components/workbench/portfolio-management
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { summarizeSelectedRows } from "@/ai/flows/summarize-selected-rows";
+// Removed import for summarizeSelectedRows - now using backend API
 import {
   AlertDialog,
   AlertDialogAction,
@@ -227,13 +229,44 @@ export function WorkbenchClient() {
     setIsSummarizing(true);
     setIsSummaryDialogOpen(true);
     try {
-      const result = await summarizeSelectedRows({ rows: dataToSummarize });
-      setSummary(result.summary);
+      // For now, summarize the first selected submission
+      const firstSubmission = dataToSummarize[0];
+      const response = await fetch(`/api/submissions/${firstSubmission.id}/summarize`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const result = await response.json();
+      
+      // Format the summary with key points and risk flags
+      let formattedSummary = result.summary || 'No summary available';
+      
+      if (result.key_points && result.key_points.length > 0) {
+        formattedSummary += '\n\n## Key Points:\n';
+        result.key_points.forEach((point: string, index: number) => {
+          formattedSummary += `${index + 1}. ${point}\n`;
+        });
+      }
+      
+      if (result.risk_flags && result.risk_flags.length > 0) {
+        formattedSummary += '\n\n## Risk Flags:\n';
+        result.risk_flags.forEach((flag: string, index: number) => {
+          formattedSummary += `⚠️ ${flag}\n`;
+        });
+      }
+      
+      setSummary(formattedSummary);
     } catch (error) {
-      console.error("Error summarizing rows:", error);
+      console.error("Error summarizing submission:", error);
       toast({
         title: "Summarization Failed",
-        description: "An error occurred while summarizing the selected rows.",
+        description: "An error occurred while summarizing the selected submission.",
         variant: "destructive",
       });
       setIsSummaryDialogOpen(false);
@@ -477,7 +510,7 @@ export function WorkbenchClient() {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
                   </div>
                 ) : (
-                  <div className="mt-4 max-h-80 overflow-y-auto text-sm text-foreground whitespace-pre-wrap">
+                  <div className="mt-4 max-h-80 overflow-y-auto text-sm text-foreground whitespace-pre-wrap markdown-content">
                     {summary}
                   </div>
                 )}

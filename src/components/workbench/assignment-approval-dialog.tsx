@@ -44,11 +44,11 @@ export function AssignmentApprovalDialog({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="max-w-md">
+      <AlertDialogContent className="max-w-md" style={{color: 'rgb(15, 23, 42) !important'}}>
         <AlertDialogHeader>
-          <AlertDialogTitle>Approve Assignment & Create Submission</AlertDialogTitle>
+          <AlertDialogTitle className="text-slate-900 dark:text-slate-100">Approve Assignment & Create Submission</AlertDialogTitle>
           <AlertDialogDescription asChild>
-            <div className="space-y-3">
+            <div className="space-y-3" style={{color: 'rgb(71, 85, 105) !important'}}>
               <p>
                 You are about to assign this work item to <strong>{underwriter}</strong> and create a new submission.
               </p>
@@ -90,7 +90,7 @@ export function AssignmentApprovalDialog({
           <AlertDialogCancel onClick={handleCancel}>
             Cancel
           </AlertDialogCancel>
-          <AlertDialogAction onClick={handleApprove} className="bg-green-600 hover:bg-green-700">
+          <AlertDialogAction onClick={handleApprove} className="bg-blue-600 hover:bg-blue-700 text-white">
             Yes, Approve Assignment
           </AlertDialogAction>
         </AlertDialogFooter>
